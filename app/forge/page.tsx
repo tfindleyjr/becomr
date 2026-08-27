@@ -43,6 +43,10 @@ export default function ForgePage(){
     setState(next);
     saveLocalState(next,user?.id);
     if(user) await saveCloudState(user.id,next);
+    if(typeof window!=="undefined"){
+      localStorage.setItem("becomr-tutorial-ready","true");
+      if(state.paths.length===0)localStorage.removeItem("becomr-tutorial-seen");
+    }
     setSaved(true);
   }
 
