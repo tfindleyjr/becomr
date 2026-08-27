@@ -1,5 +1,5 @@
 export type VisualStage = "sealed" | "open" | "inscribed" | "ornamented" | "mastered";
-export type QuestKind = "daily" | "weekly" | "boss";
+export type QuestKind = "daily" | "weekly_trial" | "weekly" | "boss";
 export type CycleType = "day" | "week";
 
 export type Quest = {
