@@ -58,19 +58,34 @@ export type CycleQuestRecord = {
   completedAt?: string;
 };
 
+export type PathWeekSnapshot = {
+  pathId: string;
+  pathName: string;
+  glyph: string;
+  earnedXp: number;
+  progress: number;
+  nodeTitle: string;
+  bossTitle?: string;
+  bossXp?: number;
+};
+
 export type CycleSnapshot = {
   id: string;
   type: CycleType;
   cycleKey: string;
+  weekNumber?: number;
   closedAt: string;
   proven: number;
   earnedXp: number;
   quests: CycleQuestRecord[];
+  paths?: PathWeekSnapshot[];
 };
 
 export type CycleState = {
   dayKey: string;
   weekKey: string;
+  calendarWeekKey?: string;
+  weekNumber?: number;
 };
 
 export type AppState = {
