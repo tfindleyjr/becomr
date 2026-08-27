@@ -34,7 +34,8 @@ export default function CycleManager(){
       }
     }
 
-    const initial=window.setTimeout(reconcile,1200);
+    const initial=window.setTimeout(reconcile,900);
+    const pulse=window.setInterval(reconcile,2200);
     const onVisible=()=>{if(document.visibilityState==="visible")reconcile()};
     const onFocus=()=>reconcile();
     document.addEventListener("visibilitychange",onVisible);
@@ -42,6 +43,7 @@ export default function CycleManager(){
 
     return()=>{
       window.clearTimeout(initial);
+      window.clearInterval(pulse);
       document.removeEventListener("visibilitychange",onVisible);
       window.removeEventListener("focus",onFocus);
     };
