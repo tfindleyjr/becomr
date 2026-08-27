@@ -39,43 +39,40 @@ export default function WeeklyTrialDeck(){
   const trials=useMemo(()=>{
     if(!state)return [];
     const week=state.cycles?.weekKey;
-    return state.quests.filter(q=>q.kind==="weekly_trial"&&(!week||!q.cycleKey||q.cycleKey===week));
+    return state.quests.filter(q=>q.kind==="weekly_trial"&&(!week||q.cycleKey===week));
   },[state]);
 
   async function prove(){
     if(!state||!active)return;
     const now=new Date().toISOString();
-    const next:AppState={
-      ...state,
-      xp:state.xp+(active.done?0:active.xp),
-      quests:state.quests.map(q=>q.id===active.id?{...q,done:true,evidence:proof.trim(),completedAt:now}:q)
-    };
+    const next:AppState={...state,xp:state.xp+(active.done?0:active.xp),quests:state.quests.map(q=>q.id===active.id?{...q,done:true,evidence:proof.trim(),completedAt:now}:q)};
     setState(next);
     saveLocalState(next,userId);
     if(userId)await saveCloudState(userId,next);
-    setActive(null);
-    setProof("");
+    setActive(null);setProof("");
     window.location.reload();
   }
 
   if(!visible||!state||trials.length===0)return null;
 
   const proven=trials.filter(q=>q.done).length;
+  const weekNumber=state.cycles?.weekNumber||1;
+  const calendarWaiting=Boolean(state.cycles?.calendarWeekKey&&state.cycles?.weekKey!==state.cycles?.calendarWeekKey);
   const grouped=state.paths.map(path=>({path,trials:trials.filter(q=>q.pathId===path.id)})).filter(group=>group.trials.length>0);
 
   return <>
     <button className="weekly-trial-dock" onClick={()=>setExpanded(true)} aria-expanded={expanded}>
       <span>◇</span>
-      <div><small>WEEKLY TRIALS</small><strong>{proven}/{trials.length} PROVEN</strong></div>
-      <b>{proven===trials.length?"BOSSES OPEN":"VIEW"}</b>
+      <div><small>WEEK {weekNumber} TRIALS</small><strong>{proven}/{trials.length} PROVEN</strong></div>
+      <b>{calendarWaiting?"WEEK LOCKED":proven===trials.length?"BOSSES OPEN":"VIEW"}</b>
     </button>
 
     {expanded&&<div className="weekly-trial-backdrop" onClick={()=>setExpanded(false)}>
       <section className="weekly-trial-deck" onClick={e=>e.stopPropagation()}>
         <button className="weekly-trial-close" onClick={()=>setExpanded(false)}>×</button>
         <div className="weekly-trial-heading">
-          <div><p className="kicker">WEEKLY TRIALS / BUILD TOWARD THE BOSS</p><h2>Earn the right to face the <em>Boss.</em></h2></div>
-          <p>Complete the smaller capability tests first. When every Weekly Trial on a path is Proven, that path&apos;s Weekly Boss unlocks automatically.</p>
+          <div><p className="kicker">WEEK {weekNumber} / BUILD TOWARD THE BOSS</p><h2>Earn the right to face the <em>Boss.</em></h2></div>
+          <p>{calendarWaiting?"The calendar has moved forward, but BECOMR will not skip this campaign. Finish this week's required Trials and Bosses before the next week unlocks.":"These Trials belong to this campaign week. A new set is generated only when the next calendar week begins and this one has been cleared."}</p>
         </div>
         <div className="weekly-trial-groups">
           {grouped.map(({path,trials:pathTrials})=><article className="weekly-trial-path" key={path.id}>
@@ -93,7 +90,7 @@ export default function WeeklyTrialDeck(){
 
     {active&&<div className="modal-backdrop"><section className="proof-sheet">
       <button className="close" onClick={()=>setActive(null)}>×</button>
-      <p className="kicker">WEEKLY TRIAL / {state.paths.find(p=>p.id===active.pathId)?.name}</p>
+      <p className="kicker">WEEK {weekNumber} TRIAL / {state.paths.find(p=>p.id===active.pathId)?.name}</p>
       <h2>{active.title}</h2>
       <div className="proof-required"><span>PROOF REQUIRED</span><p>{active.proof}</p></div>
       <textarea value={proof} onChange={e=>setProof(e.target.value)} placeholder="Record the result, number, link, clip, or observation…"/>
