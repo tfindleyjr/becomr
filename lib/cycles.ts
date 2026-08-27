@@ -1,5 +1,5 @@
 import type { AppState, CycleSnapshot, Quest, SkillPath } from "./types";
-import { currentNodeIndex } from "./progression";
+import { currentNodeIndex, pathEarnedXp, pathProgress } from "./progression";
 
 function pad(n:number){return String(n).padStart(2,"0")}
 
@@ -18,16 +18,31 @@ export function isoWeekKey(date=new Date()){
   return `${d.getFullYear()}-W${pad(week)}`;
 }
 
-function snapshot(type:"day"|"week",cycleKey:string,quests:Quest[]):CycleSnapshot{
-  const relevant=quests.filter(q=>q.cycleType===type&&q.cycleKey===cycleKey);
+function snapshot(type:"day"|"week",cycleKey:string,state:AppState,weekNumber?:number):CycleSnapshot{
+  const relevant=state.quests.filter(q=>q.cycleType===type&&q.cycleKey===cycleKey);
   return {
-    id:`${type}-${cycleKey}`,
+    id:`${type}-${cycleKey}-${weekNumber||0}`,
     type,
     cycleKey,
+    weekNumber,
     closedAt:new Date().toISOString(),
     proven:relevant.filter(q=>q.done).length,
     earnedXp:relevant.filter(q=>q.done).reduce((sum,q)=>sum+q.xp,0),
-    quests:relevant.map(q=>({id:q.id,pathId:q.pathId,title:q.title,kind:q.kind,xp:q.xp,done:Boolean(q.done),evidence:q.evidence,completedAt:q.completedAt}))
+    quests:relevant.map(q=>({id:q.id,pathId:q.pathId,title:q.title,kind:q.kind,xp:q.xp,done:Boolean(q.done),evidence:q.evidence,completedAt:q.completedAt})),
+    paths:type==="week"?state.paths.map(path=>{
+      const idx=currentNodeIndex(state,path);
+      const boss=relevant.find(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done);
+      return {
+        pathId:path.id,
+        pathName:path.name,
+        glyph:path.glyph,
+        earnedXp:pathEarnedXp(state,path.id),
+        progress:pathProgress(state,path),
+        nodeTitle:path.nodes[Math.min(idx,path.nodes.length-1)]?.title||path.name,
+        bossTitle:boss?.title,
+        bossXp:boss?.xp
+      };
+    }):undefined
   };
 }
 
@@ -53,58 +68,55 @@ function dayTrial(path:SkillPath,state:AppState,dayKey:string,sequence:number):Q
   };
 }
 
-function weeklyTrials(path:SkillPath,state:AppState,weekKey:string):Quest[]{
+function weeklyTrials(path:SkillPath,state:AppState,weekKey:string,weekNumber:number):Quest[]{
   const idx=currentNodeIndex(state,path);
   const current=path.nodes[Math.min(idx,path.nodes.length-1)];
   const next=path.nodes[Math.min(idx+1,path.nodes.length-1)] || current;
   const completed=state.quests.filter(q=>q.pathId===path.id&&q.done).length;
   return [
     {
-      id:`weekly-trial-1-${weekKey}-${path.id}`,
+      id:`weekly-trial-1-${weekKey}-${weekNumber}-${path.id}`,
       pathId:path.id,
       nodeId:current?.id,
-      title:`WEEK TRIAL I — Sharpen ${current?.title || path.name}`,
-      proof:`Produce one focused, measurable repetition or result that strengthens ${current?.title || path.name}. It should be cleaner or more independent than an earlier Proof.`,
+      title:`WEEK ${weekNumber} / TRIAL I — Sharpen ${current?.title || path.name}`,
+      proof:`Produce one focused, measurable result that strengthens ${current?.title || path.name}. It should be cleaner or more independent than an earlier Proof.`,
       xp:Math.min(95,45+completed*2),
-      kind:"weekly_trial",
-      cycleType:"week",
-      cycleKey:weekKey,
-      dueWeek:weekKey,
-      createdAt:new Date().toISOString()
+      kind:"weekly_trial",cycleType:"week",cycleKey:weekKey,dueWeek:weekKey,createdAt:new Date().toISOString()
     },
     {
-      id:`weekly-trial-2-${weekKey}-${path.id}`,
+      id:`weekly-trial-2-${weekKey}-${weekNumber}-${path.id}`,
       pathId:path.id,
       nodeId:next?.id,
-      title:`WEEK TRIAL II — Bridge Toward ${next?.title || path.name}`,
+      title:`WEEK ${weekNumber} / TRIAL II — Bridge Toward ${next?.title || path.name}`,
       proof:`Complete one measurable challenge that combines your current capability with an element of ${next?.title || "the next capability"}.`,
       xp:Math.min(120,60+completed*2),
-      kind:"weekly_trial",
-      cycleType:"week",
-      cycleKey:weekKey,
-      dueWeek:weekKey,
-      createdAt:new Date().toISOString()
+      kind:"weekly_trial",cycleType:"week",cycleKey:weekKey,dueWeek:weekKey,createdAt:new Date().toISOString()
     }
   ];
 }
 
-function weekBoss(path:SkillPath,state:AppState,weekKey:string):Quest{
+function weekBoss(path:SkillPath,state:AppState,weekKey:string,weekNumber:number):Quest{
   const idx=currentNodeIndex(state,path);
   const next=path.nodes[Math.min(idx+1,path.nodes.length-1)] || path.nodes[idx];
   const weeklyWins=state.quests.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done).length;
   return {
-    id:`week-${weekKey}-${path.id}`,
+    id:`week-${weekKey}-${weekNumber}-${path.id}`,
     pathId:path.id,
     nodeId:next?.id,
-    title:`WEEKLY BOSS — Advance Toward ${next?.title || path.name}`,
-    proof:`Complete one meaningful real-world result this week that combines what you can already do in ${path.name} and moves you closer to ${next?.title || "the next capability"}.`,
+    title:`WEEK ${weekNumber} BOSS — Advance Toward ${next?.title || path.name}`,
+    proof:`Complete one meaningful real-world result that combines what you can already do in ${path.name} and moves you closer to ${next?.title || "the next capability"}.`,
     xp:Math.min(400,225+weeklyWins*20),
-    kind:"weekly",
-    cycleType:"week",
-    cycleKey:weekKey,
-    dueWeek:weekKey,
-    createdAt:new Date().toISOString()
+    kind:"weekly",cycleType:"week",cycleKey:weekKey,dueWeek:weekKey,createdAt:new Date().toISOString()
   };
+}
+
+export function weeklyCampaignCleared(state:AppState,weekKey=state.cycles?.weekKey){
+  if(!weekKey||state.paths.length===0)return false;
+  return state.paths.every(path=>{
+    const trials=state.quests.filter(q=>q.pathId===path.id&&q.kind==="weekly_trial"&&q.cycleKey===weekKey);
+    const bosses=state.quests.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.cycleKey===weekKey);
+    return trials.length>=2&&trials.every(q=>q.done)&&bosses.length>=1&&bosses.some(q=>q.done);
+  });
 }
 
 export function activeDayQuests(state:AppState,date=new Date()){
@@ -112,34 +124,45 @@ export function activeDayQuests(state:AppState,date=new Date()){
   return state.quests.filter(q=>(q.kind==="daily"||q.kind==="boss")&&(!q.cycleKey||q.cycleKey===key));
 }
 
-export function activeWeekQuests(state:AppState,date=new Date()){
-  const key=isoWeekKey(date);
-  return state.quests.filter(q=>(q.kind==="weekly_trial"||q.kind==="weekly")&&(!q.cycleKey||q.cycleKey===key));
+export function activeWeekQuests(state:AppState){
+  const key=state.cycles?.weekKey;
+  return state.quests.filter(q=>(q.kind==="weekly_trial"||q.kind==="weekly")&&(!key||q.cycleKey===key));
 }
 
 export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
   const dayKey=localDayKey(date);
-  const weekKey=isoWeekKey(date);
+  const calendarWeekKey=isoWeekKey(date);
   const previousDay=input.cycles?.dayKey;
-  const previousWeek=input.cycles?.weekKey;
+  let activeWeekKey=input.cycles?.weekKey||calendarWeekKey;
+  let weekNumber=input.cycles?.weekNumber||1;
   let quests=[...input.quests];
   let history=[...(input.cycleHistory||[])];
 
+  // Legacy completed weekly work is history, not part of the new active campaign.
   quests=quests.map(q=>{
     if(q.cycleKey)return q;
-    if(q.kind==="weekly"||q.kind==="weekly_trial")return {...q,cycleType:"week" as const,cycleKey:weekKey,dueWeek:weekKey};
+    if(q.kind==="weekly"||q.kind==="weekly_trial"){
+      if(q.done)return {...q,cycleType:"week" as const,cycleKey:`legacy-${q.completedAt||q.id}`,dueWeek:"legacy"};
+      return {...q,cycleType:"week" as const,cycleKey:activeWeekKey,dueWeek:activeWeekKey};
+    }
     if(q.kind==="daily"||q.kind==="boss")return {...q,cycleType:"day" as const,cycleKey:dayKey};
     return q;
   });
 
   if(previousDay&&previousDay!==dayKey){
-    if(!history.some(h=>h.type==="day"&&h.cycleKey===previousDay))history=[snapshot("day",previousDay,quests),...history];
+    if(!history.some(h=>h.type==="day"&&h.cycleKey===previousDay))history=[snapshot("day",previousDay,{...input,quests}),...history];
     quests=quests.filter(q=>!(q.cycleType==="day"&&q.cycleKey===previousDay&&!q.done));
   }
 
-  if(previousWeek&&previousWeek!==weekKey){
-    if(!history.some(h=>h.type==="week"&&h.cycleKey===previousWeek))history=[snapshot("week",previousWeek,quests),...history];
-    quests=quests.filter(q=>!(q.cycleType==="week"&&q.cycleKey===previousWeek&&!q.done));
+  // Calendar rollover is gated. The next week cannot start until the active week's
+  // Trials AND Boss for every path are Proven.
+  const workingState={...input,quests,cycles:{dayKey:previousDay||dayKey,weekKey:activeWeekKey,calendarWeekKey,weekNumber}};
+  if(activeWeekKey!==calendarWeekKey&&weeklyCampaignCleared(workingState,activeWeekKey)){
+    if(!history.some(h=>h.type==="week"&&h.cycleKey===activeWeekKey)){
+      history=[snapshot("week",activeWeekKey,workingState,weekNumber),...history];
+    }
+    activeWeekKey=calendarWeekKey;
+    weekNumber+=1;
   }
 
   if(input.paths.length){
@@ -150,15 +173,15 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
         quests.push(dayTrial(path,{...input,quests},dayKey,completedToday));
       }
 
-      const hasWeeklyTrials=quests.some(q=>q.pathId===path.id&&q.kind==="weekly_trial"&&q.cycleKey===weekKey);
-      if(!hasWeeklyTrials)quests.push(...weeklyTrials(path,{...input,quests},weekKey));
+      const weekTrialsForPath=quests.filter(q=>q.pathId===path.id&&q.kind==="weekly_trial"&&q.cycleKey===activeWeekKey);
+      if(weekTrialsForPath.length<2)quests.push(...weeklyTrials(path,{...input,quests},activeWeekKey,weekNumber).filter(q=>!quests.some(existing=>existing.id===q.id)));
 
-      const hasWeek=quests.some(q=>q.pathId===path.id&&q.kind==="weekly"&&q.cycleKey===weekKey);
-      if(!hasWeek)quests.push(weekBoss(path,{...input,quests},weekKey));
+      const hasWeekBoss=quests.some(q=>q.pathId===path.id&&q.kind==="weekly"&&q.cycleKey===activeWeekKey);
+      if(!hasWeekBoss)quests.push(weekBoss(path,{...input,quests},activeWeekKey,weekNumber));
     }
   }
 
-  return {...input,quests,cycles:{dayKey,weekKey},cycleHistory:history.slice(0,104)};
+  return {...input,quests,cycles:{dayKey,weekKey:activeWeekKey,calendarWeekKey,weekNumber},cycleHistory:history.slice(0,156)};
 }
 
 export function cycleStateChanged(a:AppState,b:AppState){
