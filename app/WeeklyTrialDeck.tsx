@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AppState, Quest } from "@/lib/types";
 import { supabase, hasSupabaseConfig } from "@/lib/supabase";
 import { loadLocalState, saveCloudState, saveLocalState } from "@/lib/storage";
+import { cycleStateChanged, ensureCurrentCycles } from "@/lib/cycles";
 
 export default function WeeklyTrialDeck(){
   const [state,setState]=useState<AppState|null>(null);
@@ -25,64 +26,94 @@ export default function WeeklyTrialDeck(){
   },[]);
 
   useEffect(()=>{
-    (async()=>{
-      let uid:string|null=null;
-      if(hasSupabaseConfig&&supabase){
+    if(!visible)return;
+    let cancelled=false;
+    let uid:string|null=null;
+
+    async function syncFromBuild(){
+      if(hasSupabaseConfig&&supabase&&uid===null){
         const {data:{session}}=await supabase.auth.getSession();
         uid=session?.user?.id||null;
+        if(!cancelled)setUserId(uid);
       }
-      setUserId(uid);
-      setState(loadLocalState(uid));
-    })();
+      const stored=loadLocalState(uid);
+      if(!stored)return;
+      const reconciled=ensureCurrentCycles(stored,new Date());
+      if(cycleStateChanged(stored,reconciled)){
+        saveLocalState(reconciled,uid);
+        if(uid)saveCloudState(uid,reconciled).catch(console.warn);
+        window.dispatchEvent(new CustomEvent("becomr-cycle-updated",{detail:reconciled}));
+      }
+      if(!cancelled)setState(reconciled);
+    }
+
+    syncFromBuild();
+    const timer=window.setInterval(syncFromBuild,1800);
+    const onCycle=()=>syncFromBuild();
+    window.addEventListener("becomr-cycle-updated",onCycle);
+    return()=>{
+      cancelled=true;
+      window.clearInterval(timer);
+      window.removeEventListener("becomr-cycle-updated",onCycle);
+    };
   },[visible]);
 
-  const trials=useMemo(()=>{
+  const groups=useMemo(()=>{
     if(!state)return [];
-    const week=state.cycles?.weekKey;
-    return state.quests.filter(q=>q.kind==="weekly_trial"&&(!week||q.cycleKey===week));
+    return state.paths.map(path=>{
+      const week=state.pathWeeks?.[path.id]||{weekNumber:1,cycleKey:`path-${path.id}-week-1`};
+      const trials=state.quests.filter(q=>q.kind==="weekly_trial"&&q.pathId===path.id&&q.cycleKey===week.cycleKey);
+      const boss=state.quests.find(q=>q.kind==="weekly"&&q.pathId===path.id&&q.cycleKey===week.cycleKey);
+      return {path,week,trials,boss};
+    });
   },[state]);
 
   async function prove(){
     if(!state||!active)return;
     const now=new Date().toISOString();
-    const next:AppState={...state,xp:state.xp+(active.done?0:active.xp),quests:state.quests.map(q=>q.id===active.id?{...q,done:true,evidence:proof.trim(),completedAt:now}:q)};
+    const updated:AppState={...state,xp:state.xp+(active.done?0:active.xp),quests:state.quests.map(q=>q.id===active.id?{...q,done:true,evidence:proof.trim(),completedAt:now}:q)};
+    const next=ensureCurrentCycles(updated,new Date());
     setState(next);
     saveLocalState(next,userId);
     if(userId)await saveCloudState(userId,next);
+    window.dispatchEvent(new CustomEvent("becomr-cycle-updated",{detail:next}));
     setActive(null);setProof("");
-    window.location.reload();
   }
 
-  if(!visible||!state||trials.length===0)return null;
+  if(!visible||!state||groups.length===0)return null;
 
-  const proven=trials.filter(q=>q.done).length;
-  const weekNumber=state.cycles?.weekNumber||1;
-  const calendarWaiting=Boolean(state.cycles?.calendarWeekKey&&state.cycles?.weekKey!==state.cycles?.calendarWeekKey);
-  const grouped=state.paths.map(path=>({path,trials:trials.filter(q=>q.pathId===path.id)})).filter(group=>group.trials.length>0);
+  const allTrials=groups.flatMap(g=>g.trials);
+  const proven=allTrials.filter(q=>q.done).length;
+  const weekNumbers=[...new Set(groups.map(g=>g.week.weekNumber))];
+  const dockLabel=weekNumbers.length===1?`WEEK ${weekNumbers[0]} TRIALS`:"PATH WEEKS";
 
   return <>
     <button className="weekly-trial-dock" onClick={()=>setExpanded(true)} aria-expanded={expanded}>
       <span>◇</span>
-      <div><small>WEEK {weekNumber} TRIALS</small><strong>{proven}/{trials.length} PROVEN</strong></div>
-      <b>{calendarWaiting?"WEEK LOCKED":proven===trials.length?"BOSSES OPEN":"VIEW"}</b>
+      <div><small>{dockLabel}</small><strong>{proven}/{allTrials.length} PROVEN</strong></div>
+      <b>{groups.every(g=>g.trials.length>=2&&g.trials.every(q=>q.done))?"BOSSES OPEN":"VIEW"}</b>
     </button>
 
     {expanded&&<div className="weekly-trial-backdrop" onClick={()=>setExpanded(false)}>
       <section className="weekly-trial-deck" onClick={e=>e.stopPropagation()}>
         <button className="weekly-trial-close" onClick={()=>setExpanded(false)}>×</button>
         <div className="weekly-trial-heading">
-          <div><p className="kicker">WEEK {weekNumber} / BUILD TOWARD THE BOSS</p><h2>Earn the right to face the <em>Boss.</em></h2></div>
-          <p>{calendarWaiting?"The calendar has moved forward, but BECOMR will not skip this campaign. Finish this week's required Trials and Bosses before the next week unlocks.":"These Trials belong to this campaign week. A new set is generated only when the next calendar week begins and this one has been cleared."}</p>
+          <div><p className="kicker">WEEKLY TRIALS / EACH PATH ADVANCES</p><h2>A new Week means <em>new Proof.</em></h2></div>
+          <p>Every path owns its own Week. Clear that path&apos;s two Trials and Boss, and only that path advances to a fresh set of Weekly Trials.</p>
         </div>
         <div className="weekly-trial-groups">
-          {grouped.map(({path,trials:pathTrials})=><article className="weekly-trial-path" key={path.id}>
-            <header><span>{path.glyph}</span><div><small>{path.name}</small><strong>{pathTrials.filter(q=>q.done).length}/{pathTrials.length} PROVEN</strong></div></header>
+          {groups.map(({path,week,trials:pathTrials,boss})=><article className="weekly-trial-path" key={path.id}>
+            <header>
+              <span>{path.glyph}</span>
+              <div><small>{path.name} · WEEK {week.weekNumber}</small><strong>{pathTrials.filter(q=>q.done).length}/{pathTrials.length||2} TRIALS PROVEN</strong></div>
+              <em className="path-week-badge">W{String(week.weekNumber).padStart(2,"0")}</em>
+            </header>
             {pathTrials.map((q,i)=><button className={`weekly-trial-row ${q.done?"done":""}`} key={q.id} onClick={()=>{if(!q.done){setActive(q);setProof(q.evidence||"")}}}>
               <span>{String(i+1).padStart(2,"0")}</span>
               <div><strong>{q.title}</strong><p>{q.proof}</p></div>
               <em>{q.done?"PROVEN":`+${q.xp} XP`}</em>
             </button>)}
-            <footer>{pathTrials.every(q=>q.done)?"◆ WEEKLY BOSS UNLOCKED":"◇ COMPLETE TRIALS TO UNLOCK BOSS"}</footer>
+            <footer>{pathTrials.length<2?"◇ PREPARING THIS WEEK'S TRIALS":!pathTrials.every(q=>q.done)?`◇ WEEK ${week.weekNumber} TRIALS IN PROGRESS`:boss?.done?`✦ WEEK ${week.weekNumber} CLEARED — ADVANCING`:`◆ WEEK ${week.weekNumber} BOSS UNLOCKED`}</footer>
           </article>)}
         </div>
       </section>
@@ -90,7 +121,7 @@ export default function WeeklyTrialDeck(){
 
     {active&&<div className="modal-backdrop"><section className="proof-sheet">
       <button className="close" onClick={()=>setActive(null)}>×</button>
-      <p className="kicker">WEEK {weekNumber} TRIAL / {state.paths.find(p=>p.id===active.pathId)?.name}</p>
+      <p className="kicker">WEEK {active.pathWeekNumber||1} TRIAL / {state.paths.find(p=>p.id===active.pathId)?.name}</p>
       <h2>{active.title}</h2>
       <div className="proof-required"><span>PROOF REQUIRED</span><p>{active.proof}</p></div>
       <textarea value={proof} onChange={e=>setProof(e.target.value)} placeholder="Record the result, number, link, clip, or observation…"/>
