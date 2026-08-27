@@ -40,9 +40,31 @@ export default function AIForge({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ goal, level, capacity, context })
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not generate progression.");
-      setResult(data);
+
+      const raw = await res.text();
+      let data: any = null;
+
+      if (raw) {
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error(`Server returned a non-JSON response (${res.status}). Check the Codespaces terminal for the underlying API error.`);
+        }
+      }
+
+      if (!res.ok) {
+        throw new Error(data?.error || `AI request failed with status ${res.status}.`);
+      }
+
+      if (!data) {
+        throw new Error("The AI route returned an empty response. Check the Codespaces terminal for the underlying API error.");
+      }
+
+      if (!data.path || !Array.isArray(data.path.nodes) || !data.firstQuest || !data.weeklyBoss) {
+        throw new Error("The AI returned an incomplete progression. Please try again.");
+      }
+
+      setResult(data as Generated);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not generate progression.");
     } finally {
