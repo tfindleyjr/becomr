@@ -31,17 +31,21 @@ function snapshot(type:"day"|"week",cycleKey:string,quests:Quest[]):CycleSnapsho
   };
 }
 
-function dayTrial(path:SkillPath,state:AppState,dayKey:string):Quest{
+function dayTrial(path:SkillPath,state:AppState,dayKey:string,sequence:number):Quest{
   const idx=currentNodeIndex(state,path);
   const node=path.nodes[Math.min(idx,path.nodes.length-1)];
   const completed=state.quests.filter(q=>q.pathId===path.id&&q.done).length;
+  const labels=["PROVE","REFINE","PUSH","APPLY","STRETCH"];
+  const label=labels[Math.min(sequence,labels.length-1)];
   return {
-    id:`day-${dayKey}-${path.id}`,
+    id:`day-${dayKey}-${path.id}-${sequence}-${Date.now()}`,
     pathId:path.id,
     nodeId:node?.id,
-    title:`TODAY — Prove ${node?.title || path.name}`,
-    proof:`Create one measurable result today that demonstrates ${node?.title || path.name}. The result should be visible, countable, reviewable, or otherwise verifiable.`,
-    xp:Math.min(75,30+completed*3),
+    title:`${label} — ${node?.title || path.name}`,
+    proof:sequence===0
+      ? `Create one measurable result today that demonstrates ${node?.title || path.name}. The result should be visible, countable, reviewable, or otherwise verifiable.`
+      : `Create a new measurable result in ${path.name} that improves on your most recent Proof. Make it cleaner, harder, faster, more independent, or more complete than what you already demonstrated.`,
+    xp:Math.min(90,30+completed*3+sequence*5),
     kind:"daily",
     cycleType:"day",
     cycleKey:dayKey,
@@ -140,8 +144,11 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
 
   if(input.paths.length){
     for(const path of input.paths){
-      const hasDay=quests.some(q=>q.pathId===path.id&&(q.kind==="daily"||q.kind==="boss")&&q.cycleKey===dayKey);
-      if(!hasDay)quests.push(dayTrial(path,{...input,quests},dayKey));
+      const openDay=quests.some(q=>q.pathId===path.id&&(q.kind==="daily"||q.kind==="boss")&&q.cycleKey===dayKey&&!q.done);
+      if(!openDay){
+        const completedToday=quests.filter(q=>q.pathId===path.id&&(q.kind==="daily"||q.kind==="boss")&&q.cycleKey===dayKey&&q.done).length;
+        quests.push(dayTrial(path,{...input,quests},dayKey,completedToday));
+      }
 
       const hasWeeklyTrials=quests.some(q=>q.pathId===path.id&&q.kind==="weekly_trial"&&q.cycleKey===weekKey);
       if(!hasWeeklyTrials)quests.push(...weeklyTrials(path,{...input,quests},weekKey));
