@@ -70,7 +70,7 @@ function weekBoss(path:SkillPath,state:AppState,weekKey:string):Quest{
 
 export function activeDayQuests(state:AppState,date=new Date()){
   const key=localDayKey(date);
-  return state.quests.filter(q=>(q.kind==="daily"||q.kind==="boss")&&(!q.cycleType||q.cycleType==="day")&&(!q.cycleKey||q.cycleKey===key));
+  return state.quests.filter(q=>(q.kind==="daily"||q.kind==="boss")&&(!q.cycleKey||q.cycleKey===key));
 }
 
 export function activeWeekQuests(state:AppState,date=new Date()){
@@ -86,14 +86,6 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
   let quests=[...input.quests];
   let history=[...(input.cycleHistory||[])];
 
-  if(previousDay&&previousDay!==dayKey&&!history.some(h=>h.type==="day"&&h.cycleKey===previousDay)){
-    history=[snapshot("day",previousDay,quests),...history];
-  }
-  if(previousWeek&&previousWeek!==weekKey&&!history.some(h=>h.type==="week"&&h.cycleKey===previousWeek)){
-    history=[snapshot("week",previousWeek,quests),...history];
-  }
-
-  // Migrate legacy open quests into the current calendar cycle instead of losing them.
   quests=quests.map(q=>{
     if(q.cycleKey)return q;
     if(q.kind==="weekly")return {...q,cycleType:"week" as const,cycleKey:weekKey,dueWeek:weekKey};
@@ -101,16 +93,28 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
     return q;
   });
 
-  // A new day/week offers fresh options only when that path does not already have an active quest in that cycle.
+  if(previousDay&&previousDay!==dayKey){
+    if(!history.some(h=>h.type==="day"&&h.cycleKey===previousDay))history=[snapshot("day",previousDay,quests),...history];
+    quests=quests.filter(q=>!(q.cycleType==="day"&&q.cycleKey===previousDay&&!q.done));
+  }
+
+  if(previousWeek&&previousWeek!==weekKey){
+    if(!history.some(h=>h.type==="week"&&h.cycleKey===previousWeek))history=[snapshot("week",previousWeek,quests),...history];
+    quests=quests.filter(q=>!(q.cycleType==="week"&&q.cycleKey===previousWeek&&!q.done));
+  }
+
   if(input.paths.length){
     for(const path of input.paths){
       const hasDay=quests.some(q=>q.pathId===path.id&&(q.kind==="daily"||q.kind==="boss")&&q.cycleKey===dayKey);
       if(!hasDay)quests.push(dayTrial(path,{...input,quests},dayKey));
-
       const hasWeek=quests.some(q=>q.pathId===path.id&&q.kind==="weekly"&&q.cycleKey===weekKey);
       if(!hasWeek)quests.push(weekBoss(path,{...input,quests},weekKey));
     }
   }
 
   return {...input,quests,cycles:{dayKey,weekKey},cycleHistory:history.slice(0,104)};
+}
+
+export function cycleStateChanged(a:AppState,b:AppState){
+  return JSON.stringify({quests:a.quests,cycles:a.cycles,cycleHistory:a.cycleHistory})!==JSON.stringify({quests:b.quests,cycles:b.cycles,cycleHistory:b.cycleHistory});
 }
