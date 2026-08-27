@@ -13,6 +13,17 @@ export default function PWAClient(){
   const [ios,setIos]=useState(false);
   const [showIos,setShowIos]=useState(false);
 
+  async function install(){
+    if(deferred){
+      await deferred.prompt();
+      const choice=await deferred.userChoice;
+      if(choice.outcome==="accepted") setInstalled(true);
+      setDeferred(null);
+      return;
+    }
+    if(ios) setShowIos(true);
+  }
+
   useEffect(()=>{
     if("serviceWorker" in navigator){
       navigator.serviceWorker.register("/sw.js").catch(err=>console.warn("BECOMR service worker registration failed",err));
@@ -31,25 +42,17 @@ export default function PWAClient(){
       setDeferred(null);
       setShowIos(false);
     };
+    const onInstallRequest=()=>{void install()};
 
     window.addEventListener("beforeinstallprompt",onPrompt);
     window.addEventListener("appinstalled",onInstalled);
+    window.addEventListener("becomr-install-app",onInstallRequest);
     return ()=>{
       window.removeEventListener("beforeinstallprompt",onPrompt);
       window.removeEventListener("appinstalled",onInstalled);
+      window.removeEventListener("becomr-install-app",onInstallRequest);
     };
-  },[]);
-
-  async function install(){
-    if(deferred){
-      await deferred.prompt();
-      const choice=await deferred.userChoice;
-      if(choice.outcome==="accepted") setInstalled(true);
-      setDeferred(null);
-      return;
-    }
-    if(ios) setShowIos(true);
-  }
+  },[deferred,ios]);
 
   if(installed) return null;
 
