@@ -1,48 +1,49 @@
-# BECOMR v0.3 — Visual Rebuild
+# BECOMR v0.4 — Dynamic Insignia
 
-This checkpoint intentionally **replaces the old v0.1-looking shell**.
+**BECOME CAPABLE.**
 
-## What should look immediately different
-- No “Become more capable” SaaS hero from v0.1.
-- COMMAND opens with a serif editorial heading: **Find your direction. Grow into it.**
-- The approved celestial **Compass Tree artwork is visible inside the application**.
-- Navigation is COMMAND / COMPASS / ARCHIVE / BUILD.
-- Today's North uses an open ceremonial layout, not a rounded card.
-- Quests are an engraved ledger, not stacked pills.
-- COMPASS is a full celestial world with the tree growing from the compass.
-- ARCHIVE is a reflection ledger.
-- BUILD is a character/capability sheet with the Compass Tree as identity.
-- Trials use a full-screen Proof ritual.
+This version turns the Compass Tree from a static brand image into an **earned visual identity system**.
 
-## Phases represented
-### Phase 1 — Metaphor
-Tree growing from the compass; sun = action; moon = reflection.
+## Core mechanic
+The complete celestial emblem is no longer given to the user at the beginning.
 
-### Phase 2 — Brand DNA
-Obsidian, antique gold, amber energy, celestial ivory, serif ceremony, engraved linework.
+It exists only as a faint `future-form` blueprint. The actual foreground insignia is rebuilt from live SVG layers and progresses through:
 
-### Phase 3 — UX architecture
-COMMAND / COMPASS / ARCHIVE / BUILD.
+1. **SEALED** — ghost structure only
+2. **OPEN** — primary branch becomes visible
+3. **INSCRIBED** — secondary structure is carved in
+4. **ORNAMENTED** — leaves, symbols, and details emerge
+5. **MASTERED** — region reaches full ceremonial form
 
-### Phase 4 — COMMAND
-Today's North, Daily Compass, capacity state, open path ledger.
+Each major path owns a different physical region of the Compass Tree.
 
-### Phase 5 — COMPASS
-Celestial Compass Tree, selectable paths, branch progression.
+## Path regions
+- Developer — West / structure
+- Musician — Northwest / rhythm
+- Creative Direction — Northeast / vision
+- Creator — East / craft
+- Global Communicator — Southeast / connection
+- Entrepreneur — South / expansion
+- Athlete — Southwest / force
+- Truth Seeker — West-South / wisdom
 
-### Phase 6 — TRIAL / PROOF
-Quests require explicit Proof before XP is awarded.
+Selecting a path emphasizes its actual SVG branch and dims the other areas.
 
-### Phase 7 — ARCHIVE / BUILD
-Nightly Save, history, Marks, strongest limbs, proven capabilities.
+## Distinctive typography
+The interface now uses:
+- **Cinzel** — ritual labels, marks, navigation, BECOMR wordmark
+- **Cormorant Garamond** — major editorial headings, capability language, Archive
+- **Manrope** — functional interface text
 
-### Phase 8 — Feedback
-Proof ceremony and progression acknowledgement.
+They are loaded via Google Fonts with local fallbacks.
 
-### Phase 9 — Anti-generic polish
-Removed most rounded SaaS cards and generic dashboard structures.
+## Final-form preview
+`public/assets/becomr-compass-tree.png` remains as a very faint background blueprint. It represents what the full identity can become, not what the user already owns.
 
-## Install
+## Constellations
+The SVG architecture now supports multi-path constellation overlays. Example rules are present for future Founder and Artist combinations.
+
+## Run
 ```bash
 npm install
 npm run dev
@@ -53,13 +54,12 @@ npm run dev
 npm run build
 ```
 
-## Important when replacing the old repository
-Delete/replace the old root `app/`, `public/`, and `package.json` files. Do not put this project inside a nested `BECOMR-v0.3-visual-rebuild/` folder inside the existing repo.
+## Replace the existing GitHub repo
+Replace the root `app/`, `public/`, and project config files with this version. Then:
 
-The repo root should directly contain:
-- `app/`
-- `public/`
-- `package.json`
-- `README.md`
-- `tsconfig.json`
-- `.gitignore`
+```bash
+git pull
+rm -rf .next node_modules
+npm install
+npm run dev
+```
