@@ -26,7 +26,9 @@ export default function TutorialOverlay(){
       const tutorialReady=localStorage.getItem(READY)==="true";
       if(!isAuth&&!isEmpty&&tutorialReady&&!localStorage.getItem(KEY))setOpen(true);
     },300);
-    return()=>clearTimeout(timer);
+    const onOpen=()=>{setStep(0);setOpen(true)};
+    window.addEventListener("becomr-open-tutorial",onOpen);
+    return()=>{clearTimeout(timer);window.removeEventListener("becomr-open-tutorial",onOpen)};
   },[]);
 
   function finish(){
