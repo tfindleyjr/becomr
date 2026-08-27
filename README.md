@@ -1,120 +1,65 @@
-# BECOMR v0.2
+# BECOMR v0.3 — Visual Rebuild
 
-**BECOME CAPABLE.**
+This checkpoint intentionally **replaces the old v0.1-looking shell**.
 
-BECOMR is a real-life progression system built around one idea:
+## What should look immediately different
+- No “Become more capable” SaaS hero from v0.1.
+- COMMAND opens with a serif editorial heading: **Find your direction. Grow into it.**
+- The approved celestial **Compass Tree artwork is visible inside the application**.
+- Navigation is COMMAND / COMPASS / ARCHIVE / BUILD.
+- Today's North uses an open ceremonial layout, not a rounded card.
+- Quests are an engraved ledger, not stacked pills.
+- COMPASS is a full celestial world with the tree growing from the compass.
+- ARCHIVE is a reflection ledger.
+- BUILD is a character/capability sheet with the Compass Tree as identity.
+- Trials use a full-screen Proof ritual.
 
-> Progress is not time spent. Progress is proof that you can do something you could not do before.
+## Phases represented
+### Phase 1 — Metaphor
+Tree growing from the compass; sun = action; moon = reflection.
 
-The product's defining visual is the **Compass Tree** — a living tree growing from the center of a compass, with the sun representing action and the moon representing reflection.
+### Phase 2 — Brand DNA
+Obsidian, antique gold, amber energy, celestial ivory, serif ceremony, engraved linework.
 
-## Current experience
+### Phase 3 — UX architecture
+COMMAND / COMPASS / ARCHIVE / BUILD.
 
-### COMMAND — What should I do now?
-- Today's North / Boss Quest
-- Daily Compass
-- Capacity state
-- Active paths
-- Momentum, XP, and progression
-- Proof requirements instead of generic checkboxes
+### Phase 4 — COMMAND
+Today's North, Daily Compass, capacity state, open path ledger.
 
-### COMPASS — Where am I going?
-- Living Compass Tree
-- Sun, moon, roots, stars, firmament, and engraved compass
-- Eight major paths
-- Proven / Open / Sealed / Boss states
-- Clickable path inspection
-- Branch-growth motion
+### Phase 5 — COMPASS
+Celestial Compass Tree, selectable paths, branch progression.
 
-### TRIAL / PROOF — What counts as completion?
-- Dedicated focus view
-- Optional Par Time
-- Explicit Proof Required
-- Elapsed timer
-- Evidence/result note
-- XP only after the quest is Proven
-- Proof ceremony and level-up detection
+### Phase 6 — TRIAL / PROOF
+Quests require explicit Proof before XP is awarded.
 
-### ARCHIVE — What changed me?
-- Structured nightly Save
-- What became easier
-- What resisted
-- Where the Compass should point next
-- Persistent transformation history
-- Proven capability ledger
+### Phase 7 — ARCHIVE / BUILD
+Nightly Save, history, Marks, strongest limbs, proven capabilities.
 
-### BUILD — Who am I becoming?
-- Personal Compass Tree seal
-- Level / XP / Momentum
-- Strongest Limbs
-- Proven capabilities
-- Earned and Sealed Marks
+### Phase 8 — Feedback
+Proof ceremony and progression acknowledgement.
 
-## Paths included in the personal beta
-1. Developer
-2. Musician
-3. Creative Direction
-4. Creator
-5. Global Communicator
-6. Entrepreneur
-7. Athlete
-8. Truth Seeker
+### Phase 9 — Anti-generic polish
+Removed most rounded SaaS cards and generic dashboard structures.
 
-## Design language
-BECOMR uses an **ancient navigation instrument × modern operating system** aesthetic:
-- Obsidian
-- Antique gold
-- Achievement amber
-- Celestial ivory
-- Engraved/cartographic linework
-- Organic botanical forms
-- Compass geometry
-- Celestial symbolism
-- Sparse modern interaction surfaces
-
-The UI intentionally avoids excessive rounded SaaS cards and generic dashboard patterns.
-
-## Run in GitHub Codespaces
-
+## Install
 ```bash
 npm install
 npm run dev
 ```
 
-Open the forwarded port `3000`.
-
-## Production verification
-
+## Verify
 ```bash
 npm run build
-npm start
 ```
 
-> Note: the ChatGPT build environment timed out while downloading npm dependencies, so the final production compile should be verified in Codespaces after upload. Do not use `npm audit fix --force`; address dependency changes intentionally.
+## Important when replacing the old repository
+Delete/replace the old root `app/`, `public/`, and `package.json` files. Do not put this project inside a nested `BECOMR-v0.3-visual-rebuild/` folder inside the existing repo.
 
-## Deploy to Vercel
-Import the GitHub repository into Vercel and use the default Next.js settings.
-
-## Install on iPhone as a PWA
-1. Deploy BECOMR.
-2. Open the deployed URL in Safari.
-3. Tap **Share**.
-4. Tap **Add to Home Screen**.
-5. Launch BECOMR from its icon.
-
-## Current technical boundary
-v0.2 is a **personal local-first beta**:
-- no authentication yet
-- no Supabase/database yet
-- no AI-generated paths yet
-- no public onboarding yet
-- no native WidgetKit widget yet
-- progress persists in browser `localStorage`
-
-Those are deliberate later milestones after the core loop is tested.
-
-## Product loop
-
-**ORIENT → ACT → PROVE → GROW → REFLECT → REORIENT**
-
-See `CHANGELOG.md` and `PHASE_NOTES.md` for the phase-by-phase design and technical decisions.
+The repo root should directly contain:
+- `app/`
+- `public/`
+- `package.json`
+- `README.md`
+- `tsconfig.json`
+- `.gitignore`

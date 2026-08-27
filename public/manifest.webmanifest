@@ -1,10 +1,10 @@
 {
-  "name": "BECOMR — Become Capable",
+  "name": "BECOMR \u2014 Become Capable",
   "short_name": "BECOMR",
-  "description": "A real-life skill progression system.",
+  "description": "A real-life capability progression system.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#070A0D",
-  "theme_color": "#070A0D",
+  "background_color": "#050504",
+  "theme_color": "#050504",
   "orientation": "portrait-primary"
 }
