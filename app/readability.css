@@ -1,0 +1,136 @@
+/* BECOMR v0.6.1 — tutorial + readability pass */
+:root{
+  --ivory:#fff4d8;
+  --amber:#ffc04a;
+  --ash:#b9bbb4;
+  --shadow:#777b73;
+  --gold-readable:#e0bc77;
+  --muted-readable:#aeb0a8;
+  --deep-readable:#93968e;
+}
+
+/* Raise contrast across the full app without abandoning the palette. */
+body{color:var(--ivory)}
+.kicker,
+.section-rule,
+.mast-meta,
+.sync-badge,
+.path-name,
+.path-stage,
+.ledger-path,
+.ledger-action,
+.trial-row small,
+.weekly-card small,
+.generate-row small,
+.stage-readout small,
+.branch-node span,
+.archive-entry small,
+.storage-card small,
+.auth-note,
+.proof-required span,
+.account-status>span,
+.brand-mark>div:last-child>span,
+.energy>span,
+.inspector-intro p,
+.next-inscription>span,
+.marks small,
+.capability small,
+.user-chip span,
+.auth-panel label,
+.editor-sheet label,
+.marker-label,
+.marker-stage,
+.insignia-legend span,
+.insignia-caption,
+.insignia-caption small{
+  color:var(--gold-readable)!important;
+}
+
+.compass-title>p:last-child,
+.proof-line,
+.save-sheet textarea::placeholder,
+.evidence textarea::placeholder,
+.trial-row p,
+.weekly-card p,
+.generate-row small,
+.storage-card p,
+.auth-art>div:last-child>p:last-child,
+.auth-note p,
+.capability p,
+.next-inscription p,
+.stage-progression small,
+.archive-entry p,
+.account-status>span{
+  color:var(--muted-readable)!important;
+}
+
+input::placeholder,
+textarea::placeholder{color:#858981!important;opacity:1!important}
+
+/* Persistent tutorial launcher */
+.tutorial-launch-global{
+  position:fixed;
+  z-index:120;
+  top:18px;
+  right:22px;
+  background:#090a07e8;
+  border:1px solid #665636;
+  color:#e0bc77;
+  padding:9px 11px;
+  font:600 6px var(--ritual);
+  letter-spacing:1.4px;
+  cursor:pointer;
+  backdrop-filter:blur(10px);
+}
+.tutorial-launch-global:hover{border-color:#c99742;color:#ffc04a}
+
+.tutorial-backdrop-global{
+  position:fixed;
+  z-index:200;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(5,5,4,.84);
+  backdrop-filter:blur(12px);
+}
+.tutorial-card-global{
+  width:min(100%,560px);
+  padding:30px;
+  position:relative;
+  background:radial-gradient(circle at 82% 0%,rgba(201,151,66,.1),transparent 34%),#090a07;
+  border:1px solid #725f3d;
+  box-shadow:0 28px 90px #000;
+}
+.tutorial-top-global{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.tutorial-sigil-global{
+  width:48px;height:48px;
+  border:1px solid #856a3b;
+  display:grid;place-items:center;
+  transform:rotate(45deg);
+  color:#ffc04a;
+}
+.tutorial-sigil-global span{transform:rotate(-45deg);font:22px var(--ritual)}
+.tutorial-close-global{background:none;border:0;color:#c4bda9;font-size:25px;cursor:pointer}
+.tutorial-eyebrow-global{margin:0 0 10px;color:#d2ad6a;font:600 7px var(--ritual);letter-spacing:2.5px}
+.tutorial-card-global h2{margin:0 0 13px;font:500 48px/.95 var(--display);color:#fff4d8}
+.tutorial-copy-global{margin:0;max-width:480px;color:#c7c9c2;font:500 12px/1.75 var(--ui)}
+.tutorial-dots-global{display:flex;gap:8px;margin:28px 0 20px}
+.tutorial-dots-global button{width:35px;height:3px;padding:0;border:0;background:#494233;cursor:pointer}
+.tutorial-dots-global button.active{background:linear-gradient(90deg,#c99742,#ffc04a);box-shadow:0 0 8px rgba(255,192,74,.25)}
+.tutorial-actions-global{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-top:1px solid #393226;padding-top:16px}
+.tutorial-actions-global button{background:none;border:0;color:#e0bc77;font:600 7px var(--ritual);letter-spacing:1.4px;cursor:pointer}
+.tutorial-actions-global button:first-child{text-align:left}
+.tutorial-actions-global button:last-child{text-align:right}
+.tutorial-actions-global button:disabled{opacity:.3;cursor:default}
+.tutorial-actions-global span{color:#a7a99f;font:600 6px var(--ritual);letter-spacing:1.5px}
+
+@media(max-width:900px){
+  .tutorial-launch-global{top:auto;right:14px;bottom:83px;padding:8px}
+  .tutorial-card-global{padding:24px}
+  .tutorial-card-global h2{font-size:42px}
+}
+@media(max-width:560px){
+  .tutorial-card-global h2{font-size:38px}
+  .tutorial-copy-global{font-size:11px}
+}
