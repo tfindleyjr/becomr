@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./readability.css";
+import "./forge.css";
 import TutorialOverlay from "./TutorialOverlay";
 
 export const metadata: Metadata = {
@@ -18,5 +19,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<TutorialOverlay/></body></html>;
+  return <html lang="en"><body>{children}<a className="forge-launch-global" href="/forge">AI FORGE</a><TutorialOverlay/></body></html>;
 }
