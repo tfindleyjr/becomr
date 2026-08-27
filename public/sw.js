@@ -1,4 +1,4 @@
-const CACHE="becomr-shell-v1";
+const CACHE="becomr-shell-v2";
 const CORE=["/","/forge","/manifest.webmanifest","/assets/becomr-compass-tree.png"];
 
 self.addEventListener("install",event=>{
@@ -19,6 +19,10 @@ self.addEventListener("fetch",event=>{
   const url=new URL(request.url);
   if(url.origin!==self.location.origin) return;
 
+  // Never cache Next.js runtime/chunks or API responses. Stale framework assets can
+  // make a new layout execute against an old Webpack module map after an update.
+  if(url.pathname.startsWith("/_next/") || url.pathname.startsWith("/api/")) return;
+
   if(request.mode==="navigate"){
     event.respondWith(
       fetch(request)
@@ -35,13 +39,17 @@ self.addEventListener("fetch",event=>{
     return;
   }
 
+  // Static assets use network-first so updates appear immediately while still
+  // retaining an offline fallback for previously fetched files.
   event.respondWith(
-    caches.match(request).then(cached=>cached || fetch(request).then(response=>{
-      if(response.ok){
-        const copy=response.clone();
-        caches.open(CACHE).then(cache=>cache.put(request,copy));
-      }
-      return response;
-    }))
+    fetch(request)
+      .then(response=>{
+        if(response.ok){
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(request,copy));
+        }
+        return response;
+      })
+      .catch(()=>caches.match(request))
   );
 });
