@@ -3,13 +3,16 @@ import "./globals.css";
 import "./readability.css";
 import "./forge.css";
 import "./customer-journey.css";
+import "./mobile-pwa.css";
 import TutorialOverlay from "./TutorialOverlay";
+import PWAClient from "./PWAClient";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
   description: "Orient. Act. Prove. Grow. Reflect. Reorient.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, title: "BECOMR", statusBarStyle: "black-translucent" }
+  appleWebApp: { capable: true, title: "BECOMR", statusBarStyle: "black-translucent" },
+  applicationName: "BECOMR"
 };
 
 export const viewport: Viewport = {
@@ -20,5 +23,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<TutorialOverlay/></body></html>;
+  return <html lang="en"><body>{children}<PWAClient/><TutorialOverlay/></body></html>;
 }
