@@ -34,7 +34,8 @@ export function isNodeOpen(state:AppState,path:SkillPath,nodeIndex:number){
 }
 
 export function weeklyBosses(state:AppState){
-  return state.quests.filter(q=>q.kind==="weekly");
+  const currentWeek=state.cycles?.weekKey;
+  return state.quests.filter(q=>q.kind==="weekly"&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
 }
 
 export function weeklyScore(state:AppState){
