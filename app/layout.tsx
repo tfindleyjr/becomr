@@ -6,6 +6,7 @@ import "./customer-journey.css";
 import "./mobile-pwa.css";
 import "./continuation.css";
 import "./weekly-trials.css";
+import "./phase21-polish.css";
 import TutorialOverlay from "./TutorialOverlay";
 import PWAClient from "./PWAClient";
 import ContinuationUnlock from "./ContinuationUnlock";
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050504",
+  themeColor: "#0e0d0b",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover"
