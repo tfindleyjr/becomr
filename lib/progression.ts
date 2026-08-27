@@ -33,15 +33,26 @@ export function isNodeOpen(state:AppState,path:SkillPath,nodeIndex:number){
   return nodeIndex <= currentNodeIndex(state,path)+1;
 }
 
+export function weeklyTrialsForPath(state:AppState,pathId:string){
+  const currentWeek=state.cycles?.weekKey;
+  return state.quests.filter(q=>q.kind==="weekly_trial"&&q.pathId===pathId&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
+}
+
+export function weeklyBossUnlocked(state:AppState,pathId:string){
+  const trials=weeklyTrialsForPath(state,pathId);
+  return trials.length===0 || trials.every(q=>q.done);
+}
+
 export function weeklyBosses(state:AppState){
   const currentWeek=state.cycles?.weekKey;
-  return state.quests.filter(q=>q.kind==="weekly"&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
+  return state.quests.filter(q=>q.kind==="weekly"&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek)&&weeklyBossUnlocked(state,q.pathId));
 }
 
 export function weeklyScore(state:AppState){
-  const bosses=weeklyBosses(state);
-  if(!bosses.length) return 0;
-  return Math.round((bosses.filter(q=>q.done).length/bosses.length)*100);
+  const currentWeek=state.cycles?.weekKey;
+  const weekly=state.quests.filter(q=>(q.kind==="weekly_trial"||q.kind==="weekly")&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
+  if(!weekly.length) return 0;
+  return Math.round((weekly.filter(q=>q.done).length/weekly.length)*100);
 }
 
 export function generatedWeeklyBoss(path:SkillPath,nodeTitle:string):Quest{
