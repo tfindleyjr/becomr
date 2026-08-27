@@ -9,12 +9,15 @@ export default function WeeklyTrialDeck(){
   const [state,setState]=useState<AppState|null>(null);
   const [userId,setUserId]=useState<string|null>(null);
   const [visible,setVisible]=useState(false);
+  const [expanded,setExpanded]=useState(false);
   const [active,setActive]=useState<Quest|null>(null);
   const [proof,setProof]=useState("");
 
   useEffect(()=>{
     function syncVisibility(){
-      setVisible(window.location.hash==="#weekly");
+      const onWeekly=window.location.hash==="#weekly";
+      setVisible(onWeekly);
+      if(!onWeekly)setExpanded(false);
     }
     syncVisibility();
     window.addEventListener("hashchange",syncVisibility);
@@ -57,30 +60,36 @@ export default function WeeklyTrialDeck(){
 
   if(!visible||!state||trials.length===0)return null;
 
-  const grouped=state.paths.map(path=>({
-    path,
-    trials:trials.filter(q=>q.pathId===path.id)
-  })).filter(group=>group.trials.length>0);
+  const proven=trials.filter(q=>q.done).length;
+  const grouped=state.paths.map(path=>({path,trials:trials.filter(q=>q.pathId===path.id)})).filter(group=>group.trials.length>0);
 
   return <>
-    <section className="weekly-trial-deck">
-      <div className="weekly-trial-heading">
-        <p className="kicker">WEEKLY TRIALS / BUILD TOWARD THE BOSS</p>
-        <h2>Earn the right to face the <em>Boss.</em></h2>
-        <p>Complete the smaller capability tests first. When every Weekly Trial on a path is Proven, that path&apos;s Weekly Boss unlocks automatically.</p>
-      </div>
-      <div className="weekly-trial-groups">
-        {grouped.map(({path,trials:pathTrials})=><article className="weekly-trial-path" key={path.id}>
-          <header><span>{path.glyph}</span><div><small>{path.name}</small><strong>{pathTrials.filter(q=>q.done).length}/{pathTrials.length} PROVEN</strong></div></header>
-          {pathTrials.map((q,i)=><button className={`weekly-trial-row ${q.done?"done":""}`} key={q.id} onClick={()=>{if(!q.done){setActive(q);setProof(q.evidence||"")}}}>
-            <span>{String(i+1).padStart(2,"0")}</span>
-            <div><strong>{q.title}</strong><p>{q.proof}</p></div>
-            <em>{q.done?"PROVEN":`+${q.xp} XP`}</em>
-          </button>)}
-          <footer>{pathTrials.every(q=>q.done)?"◆ WEEKLY BOSS UNLOCKED":"◇ COMPLETE TRIALS TO UNLOCK BOSS"}</footer>
-        </article>)}
-      </div>
-    </section>
+    <button className="weekly-trial-dock" onClick={()=>setExpanded(true)} aria-expanded={expanded}>
+      <span>◇</span>
+      <div><small>WEEKLY TRIALS</small><strong>{proven}/{trials.length} PROVEN</strong></div>
+      <b>{proven===trials.length?"BOSSES OPEN":"VIEW"}</b>
+    </button>
+
+    {expanded&&<div className="weekly-trial-backdrop" onClick={()=>setExpanded(false)}>
+      <section className="weekly-trial-deck" onClick={e=>e.stopPropagation()}>
+        <button className="weekly-trial-close" onClick={()=>setExpanded(false)}>×</button>
+        <div className="weekly-trial-heading">
+          <div><p className="kicker">WEEKLY TRIALS / BUILD TOWARD THE BOSS</p><h2>Earn the right to face the <em>Boss.</em></h2></div>
+          <p>Complete the smaller capability tests first. When every Weekly Trial on a path is Proven, that path&apos;s Weekly Boss unlocks automatically.</p>
+        </div>
+        <div className="weekly-trial-groups">
+          {grouped.map(({path,trials:pathTrials})=><article className="weekly-trial-path" key={path.id}>
+            <header><span>{path.glyph}</span><div><small>{path.name}</small><strong>{pathTrials.filter(q=>q.done).length}/{pathTrials.length} PROVEN</strong></div></header>
+            {pathTrials.map((q,i)=><button className={`weekly-trial-row ${q.done?"done":""}`} key={q.id} onClick={()=>{if(!q.done){setActive(q);setProof(q.evidence||"")}}}>
+              <span>{String(i+1).padStart(2,"0")}</span>
+              <div><strong>{q.title}</strong><p>{q.proof}</p></div>
+              <em>{q.done?"PROVEN":`+${q.xp} XP`}</em>
+            </button>)}
+            <footer>{pathTrials.every(q=>q.done)?"◆ WEEKLY BOSS UNLOCKED":"◇ COMPLETE TRIALS TO UNLOCK BOSS"}</footer>
+          </article>)}
+        </div>
+      </section>
+    </div>}
 
     {active&&<div className="modal-backdrop"><section className="proof-sheet">
       <button className="close" onClick={()=>setActive(null)}>×</button>
