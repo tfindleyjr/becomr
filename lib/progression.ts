@@ -33,24 +33,34 @@ export function isNodeOpen(state:AppState,path:SkillPath,nodeIndex:number){
   return nodeIndex <= currentNodeIndex(state,path)+1;
 }
 
+export function activePathWeek(state:AppState,pathId:string){
+  return state.pathWeeks?.[pathId];
+}
+
 export function weeklyTrialsForPath(state:AppState,pathId:string){
-  const currentWeek=state.cycles?.weekKey;
-  return state.quests.filter(q=>q.kind==="weekly_trial"&&q.pathId===pathId&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
+  const active=activePathWeek(state,pathId);
+  return state.quests.filter(q=>q.kind==="weekly_trial"&&q.pathId===pathId&&(!active||q.cycleKey===active.cycleKey));
 }
 
 export function weeklyBossUnlocked(state:AppState,pathId:string){
   const trials=weeklyTrialsForPath(state,pathId);
-  return trials.length===0 || trials.every(q=>q.done);
+  return trials.length>=2 && trials.every(q=>q.done);
 }
 
 export function weeklyBosses(state:AppState){
-  const currentWeek=state.cycles?.weekKey;
-  return state.quests.filter(q=>q.kind==="weekly"&&!q.done&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek)&&weeklyBossUnlocked(state,q.pathId));
+  return state.quests.filter(q=>{
+    if(q.kind!=="weekly"||q.done)return false;
+    const active=activePathWeek(state,q.pathId);
+    return (!active||q.cycleKey===active.cycleKey)&&weeklyBossUnlocked(state,q.pathId);
+  });
 }
 
 export function weeklyScore(state:AppState){
-  const currentWeek=state.cycles?.weekKey;
-  const weekly=state.quests.filter(q=>(q.kind==="weekly_trial"||q.kind==="weekly")&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek));
+  const weekly=state.quests.filter(q=>{
+    if(q.kind!=="weekly_trial"&&q.kind!=="weekly")return false;
+    const active=activePathWeek(state,q.pathId);
+    return !active||q.cycleKey===active.cycleKey;
+  });
   if(!weekly.length) return 0;
   return Math.round((weekly.filter(q=>q.done).length/weekly.length)*100);
 }
@@ -85,6 +95,7 @@ export function generatedStretchWeeklyBoss(state:AppState,path:SkillPath):Quest{
   const idx=currentNodeIndex(state,path);
   const nextNode=path.nodes[Math.min(idx+1,path.nodes.length-1)] || path.nodes[idx];
   const weeklyWins=state.quests.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done).length;
+  const active=state.pathWeeks?.[path.id];
   return {
     id:`stretch-week-${path.id}-${Date.now()}`,
     pathId:path.id,
@@ -92,6 +103,9 @@ export function generatedStretchWeeklyBoss(state:AppState,path:SkillPath):Quest{
     title:`STRETCH BOSS — Advance Toward ${nextNode?.title || path.name}`,
     proof:`Complete a larger real-world result that combines what you have already Proven in ${path.name} and moves you visibly closer to ${nextNode?.title || "the next capability"}. The result must be distinct from your previous Weekly Bosses.`,
     xp:Math.min(450,275+weeklyWins*25),
-    kind:"weekly"
+    kind:"weekly",
+    cycleType:"week",
+    cycleKey:active?.cycleKey,
+    pathWeekNumber:active?.weekNumber
   };
 }
