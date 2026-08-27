@@ -23,7 +23,14 @@ export default function ContinuationUnlock(){
       setState(loadLocalState(uid));
       setReady(true);
     })();
-  },[]);
+    const onOpen=()=>{
+      const stored=loadLocalState(userId);
+      if(stored)setState(stored);
+      setOpen(true);
+    };
+    window.addEventListener("becomr-open-continuation",onOpen);
+    return()=>window.removeEventListener("becomr-open-continuation",onOpen);
+  },[userId]);
 
   const status=useMemo(()=>{
     if(!state||state.paths.length===0)return null;
@@ -41,7 +48,7 @@ export default function ContinuationUnlock(){
     saveLocalState(next,userId);
     if(userId)await saveCloudState(userId,next);
     setOpen(false);
-    window.location.reload();
+    window.dispatchEvent(new CustomEvent("becomr-cycle-updated",{detail:next}));
   }
 
   async function daily(path:SkillPath){
