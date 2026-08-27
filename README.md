@@ -1,77 +1,79 @@
-# BECOMR v0.5 — Phases 12–15
+# BECOMR v0.6 — Accounts + Cloud Sync
 
-This build moves BECOMR from a visually compelling prototype toward a real product system.
+Phase 15 is now implemented end-to-end at the app layer.
 
-## Phase 12 — Data-driven progression
-The Compass Tree no longer uses seeded percentages.
+## What v0.6 adds
+- Email/password account creation
+- Email/password sign in
+- Persistent Supabase sessions
+- Sign out
+- Local-first state saving
+- Automatic cloud saving
+- Cloud restore on login
+- Local-to-cloud migration on first successful login
+- Offline fallback
+- Debounced cloud writes
+- Visible sync state:
+  - LOCAL
+  - SYNCING
+  - CLOUD SAVED
+  - OFFLINE
+  - SYNC ERROR
 
-Each path now calculates:
-- **Path XP** from Proven quests
-- **Current node** from XP thresholds
-- **Progress percentage** from real Path XP
-- **Visual stage** from calculated progress
+## Supabase project
+BECOMR is connected to:
+`https://hzhxbjvzgnrrtrevhokt.supabase.co`
 
-This means proving a quest changes the actual branch state.
+The production database already contains `public.user_state` with Row Level Security.
 
-## Phase 13 — Editable quests and paths
-COMMAND now includes:
-- `+ QUEST`
-- `+ PATH`
+## Environment setup
+Copy:
 
-Users can add custom quests with:
-- path
-- title
-- Proof Required
-- XP
-- daily / weekly / boss type
-
-Users can open new custom paths with:
-- name
-- glyph
-- capability statement
-
-This is the first step away from a hardcoded personal-only curriculum.
-
-## Phase 14 — Weekly Bosses
-There is now a dedicated **WEEKLY** realm.
-
-It includes:
-- active Weekly Bosses
-- weekly completion score
-- Proof requirements
-- larger XP rewards
-- per-path generation of a new Weekly Boss based on current progression
-
-## Phase 15 — Supabase-ready persistence
-v0.5 introduces a `StateStore` abstraction.
-
-By default:
-- BECOMR works immediately with browser `localStorage`.
-
-If these variables exist:
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```bash
+cp .env.local.example .env.local
 ```
 
-the app switches to `SupabaseStateStore`.
+The included `.env.local.example` contains the BECOMR project URL and the project's public publishable key.
 
-Files:
-- `lib/storage.ts`
-- `lib/supabase-store.ts`
-- `supabase/schema.sql`
-- `.env.example`
+`.env.local` is ignored by Git.
 
-### Important
-A Supabase project has **not** been created yet. The connected Supabase account currently has no projects. Creating one requires choosing the Supabase organization and confirming any applicable cost.
+Restart Next.js after adding the variables:
+
+```bash
+rm -rf .next
+npm run dev
+```
+
+## First sign-in migration
+BECOMR always saves locally first.
+
+When an authenticated user signs in:
+1. BECOMR checks `user_state` in Supabase.
+2. If a cloud record exists, cloud state wins and is mirrored locally.
+3. If no cloud record exists but local state exists, the local build is uploaded to the user's cloud record.
+4. If neither exists, the seed state is created in the cloud.
+
+This prevents a first login from wiping existing local progress.
+
+## Auth note
+Depending on the Supabase Auth settings, new users may have to confirm their email before receiving a session. The UI handles this and tells them to check their email.
+
+## Security
+The `user_state` table uses RLS policies based on `auth.uid() = user_id`, so authenticated users cannot read or overwrite another user's BECOMR state.
 
 ## Run
 ```bash
 npm install
+cp .env.local.example .env.local
+npm run build
 npm run dev
 ```
 
-## Verify
-```bash
-npm run build
-```
+## Next phase
+Phase 16 — AI Progression Engine:
+- goal → generated Path
+- node/prerequisite generation
+- context-aware next Trials
+- Weekly Boss generation
+- difficulty adaptation from Proof + Archive
+- AI operating behind the Compass rather than as a generic chatbot
