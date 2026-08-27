@@ -26,7 +26,7 @@ export default function CycleManager(){
 
         saveLocalState(next,userId);
         if(userId)await saveCloudState(userId,next);
-        window.location.reload();
+        window.dispatchEvent(new CustomEvent("becomr-cycle-updated",{detail:next}));
       }catch(err){
         console.warn("BECOMR cycle reconciliation failed",err);
       }finally{
@@ -35,7 +35,7 @@ export default function CycleManager(){
     }
 
     const initial=window.setTimeout(reconcile,900);
-    const pulse=window.setInterval(reconcile,2200);
+    const pulse=window.setInterval(reconcile,15000);
     const onVisible=()=>{if(document.visibilityState==="visible")reconcile()};
     const onFocus=()=>reconcile();
     document.addEventListener("visibilitychange",onVisible);
