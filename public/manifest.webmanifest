@@ -1,10 +1,34 @@
 {
-  "name": "BECOMR \u2014 Become Capable",
+  "name": "BECOMR — Become Capable",
   "short_name": "BECOMR",
   "description": "A real-life capability progression system.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#050504",
   "theme_color": "#050504",
-  "orientation": "portrait-primary"
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "education", "lifestyle"],
+  "icons": [
+    {
+      "src": "/assets/becomr-compass-tree.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Compass",
+      "short_name": "Compass",
+      "url": "/?tab=compass"
+    },
+    {
+      "name": "Forge a Path",
+      "short_name": "AI Forge",
+      "url": "/forge"
+    }
+  ]
 }
