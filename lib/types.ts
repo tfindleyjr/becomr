@@ -13,6 +13,7 @@ export type Quest = {
   dueWeek?: string;
   cycleType?: CycleType;
   cycleKey?: string;
+  pathWeekNumber?: number;
   createdAt?: string;
   done?: boolean;
   evidence?: string;
@@ -54,6 +55,7 @@ export type CycleQuestRecord = {
   kind: QuestKind;
   xp: number;
   done: boolean;
+  pathWeekNumber?: number;
   evidence?: string;
   completedAt?: string;
 };
@@ -62,6 +64,7 @@ export type PathWeekSnapshot = {
   pathId: string;
   pathName: string;
   glyph: string;
+  weekNumber?: number;
   earnedXp: number;
   progress: number;
   nodeTitle: string;
@@ -80,6 +83,11 @@ export type CycleSnapshot = {
   paths?: PathWeekSnapshot[];
 };
 
+export type PathWeekState = {
+  weekNumber: number;
+  cycleKey: string;
+};
+
 export type CycleState = {
   dayKey: string;
   weekKey: string;
@@ -94,5 +102,6 @@ export type AppState = {
   quests: Quest[];
   archive: ArchiveEntry[];
   cycles?: CycleState;
+  pathWeeks?: Record<string,PathWeekState>;
   cycleHistory?: CycleSnapshot[];
 };
