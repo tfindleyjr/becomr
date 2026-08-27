@@ -26,7 +26,7 @@ export default function CycleManager(){
 
         saveLocalState(next,userId);
         if(userId)await saveCloudState(userId,next);
-        window.dispatchEvent(new CustomEvent("becomr-cycle-updated"));
+        window.location.reload();
       }catch(err){
         console.warn("BECOMR cycle reconciliation failed",err);
       }finally{
