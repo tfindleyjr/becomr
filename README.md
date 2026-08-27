@@ -1,47 +1,69 @@
-# BECOMR v0.4 — Dynamic Insignia
+# BECOMR v0.5 — Phases 12–15
 
-**BECOME CAPABLE.**
+This build moves BECOMR from a visually compelling prototype toward a real product system.
 
-This version turns the Compass Tree from a static brand image into an **earned visual identity system**.
+## Phase 12 — Data-driven progression
+The Compass Tree no longer uses seeded percentages.
 
-## Core mechanic
-The complete celestial emblem is no longer given to the user at the beginning.
+Each path now calculates:
+- **Path XP** from Proven quests
+- **Current node** from XP thresholds
+- **Progress percentage** from real Path XP
+- **Visual stage** from calculated progress
 
-It exists only as a faint `future-form` blueprint. The actual foreground insignia is rebuilt from live SVG layers and progresses through:
+This means proving a quest changes the actual branch state.
 
-1. **SEALED** — ghost structure only
-2. **OPEN** — primary branch becomes visible
-3. **INSCRIBED** — secondary structure is carved in
-4. **ORNAMENTED** — leaves, symbols, and details emerge
-5. **MASTERED** — region reaches full ceremonial form
+## Phase 13 — Editable quests and paths
+COMMAND now includes:
+- `+ QUEST`
+- `+ PATH`
 
-Each major path owns a different physical region of the Compass Tree.
+Users can add custom quests with:
+- path
+- title
+- Proof Required
+- XP
+- daily / weekly / boss type
 
-## Path regions
-- Developer — West / structure
-- Musician — Northwest / rhythm
-- Creative Direction — Northeast / vision
-- Creator — East / craft
-- Global Communicator — Southeast / connection
-- Entrepreneur — South / expansion
-- Athlete — Southwest / force
-- Truth Seeker — West-South / wisdom
+Users can open new custom paths with:
+- name
+- glyph
+- capability statement
 
-Selecting a path emphasizes its actual SVG branch and dims the other areas.
+This is the first step away from a hardcoded personal-only curriculum.
 
-## Distinctive typography
-The interface now uses:
-- **Cinzel** — ritual labels, marks, navigation, BECOMR wordmark
-- **Cormorant Garamond** — major editorial headings, capability language, Archive
-- **Manrope** — functional interface text
+## Phase 14 — Weekly Bosses
+There is now a dedicated **WEEKLY** realm.
 
-They are loaded via Google Fonts with local fallbacks.
+It includes:
+- active Weekly Bosses
+- weekly completion score
+- Proof requirements
+- larger XP rewards
+- per-path generation of a new Weekly Boss based on current progression
 
-## Final-form preview
-`public/assets/becomr-compass-tree.png` remains as a very faint background blueprint. It represents what the full identity can become, not what the user already owns.
+## Phase 15 — Supabase-ready persistence
+v0.5 introduces a `StateStore` abstraction.
 
-## Constellations
-The SVG architecture now supports multi-path constellation overlays. Example rules are present for future Founder and Artist combinations.
+By default:
+- BECOMR works immediately with browser `localStorage`.
+
+If these variables exist:
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
+
+the app switches to `SupabaseStateStore`.
+
+Files:
+- `lib/storage.ts`
+- `lib/supabase-store.ts`
+- `supabase/schema.sql`
+- `.env.example`
+
+### Important
+A Supabase project has **not** been created yet. The connected Supabase account currently has no projects. Creating one requires choosing the Supabase organization and confirming any applicable cost.
 
 ## Run
 ```bash
@@ -52,14 +74,4 @@ npm run dev
 ## Verify
 ```bash
 npm run build
-```
-
-## Replace the existing GitHub repo
-Replace the root `app/`, `public/`, and project config files with this version. Then:
-
-```bash
-git pull
-rm -rf .next node_modules
-npm install
-npm run dev
 ```
