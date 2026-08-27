@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./readability.css";
 import TutorialOverlay from "./TutorialOverlay";
 
 export const metadata: Metadata = {
