@@ -48,20 +48,18 @@ export default function WeeklyProgressLedger(){
     if(!state)return [];
     const history=(state.cycleHistory||[])
       .filter(h=>h.type==="week"&&h.weekNumber)
-      .map(h=>({
-        weekNumber:h.weekNumber!,cycleKey:h.cycleKey,current:false,closed:true,quests:h.quests,paths:h.paths||[]
-      }));
+      .map(h=>({weekNumber:h.weekNumber!,cycleKey:h.cycleKey,current:false,closed:true,quests:h.quests,paths:h.paths||[]}));
     const currentNumber=state.cycles?.weekNumber||1;
     const currentKey=state.cycles?.weekKey||"";
     const currentQuests=state.quests.filter(q=>q.cycleType==="week"&&q.cycleKey===currentKey);
     const currentPaths=state.paths.map(path=>{
       const idx=currentNodeIndex(state,path);
-      const boss=currentQuests.find(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done);
+      const bosses=currentQuests.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done).map(q=>({title:q.title,xp:q.xp}));
       return {
         pathId:path.id,pathName:path.name,glyph:path.glyph,
         earnedXp:pathEarnedXp(state,path.id),progress:pathProgress(state,path),
         nodeTitle:path.nodes[Math.min(idx,path.nodes.length-1)]?.title||path.name,
-        bossTitle:boss?.title,bossXp:boss?.xp
+        bosses
       };
     });
     const current:WeekView={weekNumber:currentNumber,cycleKey:currentKey,current:true,closed:false,quests:currentQuests,paths:currentPaths};
@@ -74,9 +72,9 @@ export default function WeeklyProgressLedger(){
   const selected=weeks.find(w=>w.weekNumber===selectedWeek)||null;
   const calendarWaiting=Boolean(state.cycles?.calendarWeekKey&&state.cycles?.weekKey!==state.cycles?.calendarWeekKey);
 
-  function bossFor(pathId:string,weekNumber:number){
+  function bossesFor(pathId:string,weekNumber:number){
     const week=weeks.find(w=>w.weekNumber===weekNumber);
-    return week?.paths.find(p=>p.pathId===pathId)?.bossTitle;
+    return week?.paths.find(p=>p.pathId===pathId)?.bosses||[];
   }
 
   return <>
@@ -103,19 +101,20 @@ export default function WeeklyProgressLedger(){
             {state.paths.map(path=><div className="ledger-row" key={path.id} style={{gridColumn:`1 / -1`,display:"grid",gridTemplateColumns:`minmax(180px,1.15fr) repeat(${maxWeek},minmax(112px,1fr))`}}>
               <div className="ledger-path"><span>{path.glyph}</span><div><strong>{path.name}</strong><small>{pathProgress(state,path)}% CURRENT</small></div></div>
               {Array.from({length:maxWeek},(_,i)=>i+1).map(n=>{
-                const boss=bossFor(path.id,n);
+                const bosses=bossesFor(path.id,n);
                 const isCurrent=n===(state.cycles?.weekNumber||1);
-                return <button key={`${path.id}-${n}`} className={`boss-slot ${boss?"proven":isCurrent?"active":"empty"}`} onClick={()=>setSelectedWeek(n)}>
-                  <span>{boss?"◆":isCurrent?"◇":"·"}</span>
-                  <small>{boss?"BOSS PROVEN":isCurrent?"RESERVED":"WEEK SLOT"}</small>
-                  {boss&&<strong>{boss.replace(/^WEEK \d+ BOSS — /,"")}</strong>}
+                return <button key={`${path.id}-${n}`} className={`boss-slot ${bosses.length?"proven":isCurrent?"active":"empty"}`} onClick={()=>setSelectedWeek(n)}>
+                  <span>{bosses.length?"◆":isCurrent?"◇":"·"}</span>
+                  <small>{bosses.length?`${bosses.length} BOSS${bosses.length===1?"":"ES"} PROVEN`:isCurrent?"RESERVED":"WEEK SLOT"}</small>
+                  {bosses.slice(0,2).map((boss,i)=><strong key={i}>{boss.title.replace(/^WEEK \d+ BOSS — /,"").replace(/^STRETCH BOSS — /,"Stretch: ")}</strong>)}
+                  {bosses.length>2&&<em>+{bosses.length-2} MORE</em>}
                 </button>;
               })}
             </div>)}
           </div>
         </div>
 
-        <p className="ledger-hint">Each column is permanently reserved for that campaign week. Select a week to inspect its Trials, Bosses, XP, and path level snapshot.</p>
+        <p className="ledger-hint">Each column is permanently reserved for that campaign week. Select a week to inspect every Trial, every Boss, XP earned, and the path level snapshot from that week.</p>
       </section>
     </div>}
 
