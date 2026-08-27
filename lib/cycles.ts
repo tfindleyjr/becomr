@@ -22,6 +22,10 @@ function pathWeekKey(pathId:string,weekNumber:number){
   return `path-${pathId}-week-${weekNumber}`;
 }
 
+function isPathWeekKey(q:Quest){
+  return Boolean(q.cycleKey?.startsWith(`path-${q.pathId}-week-`));
+}
+
 function snapshotPathWeek(state:AppState,path:SkillPath,cycleKey:string,weekNumber:number):CycleSnapshot{
   const relevant=state.quests.filter(q=>q.pathId===path.id&&q.cycleType==="week"&&q.cycleKey===cycleKey);
   const idx=currentNodeIndex(state,path);
@@ -132,30 +136,37 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
   let history=[...(input.cycleHistory||[])];
   const pathWeeks={...(input.pathWeeks||{})};
 
-  // Keep legacy daily work on today's cycle; completed legacy weekly work remains historical.
+  // First establish an active per-path week for every path.
+  for(const path of input.paths){
+    if(!pathWeeks[path.id]) pathWeeks[path.id]={weekNumber:1,cycleKey:pathWeekKey(path.id,1)};
+  }
+
+  // Migrate every old global/legacy OPEN weekly quest into the active path week.
+  // Completed old work stays historical so it cannot block the current Boss.
   quests=quests.map(q=>{
-    if(q.cycleKey)return q;
     if(q.kind==="weekly"||q.kind==="weekly_trial"){
+      if(isPathWeekKey(q))return q;
       if(q.done)return {...q,cycleType:"week" as const,cycleKey:`legacy-${q.completedAt||q.id}`};
-      const existingWeek=pathWeeks[q.pathId]?.weekNumber||1;
-      return {...q,cycleType:"week" as const,cycleKey:pathWeekKey(q.pathId,existingWeek),pathWeekNumber:existingWeek};
+      const active=pathWeeks[q.pathId]||{weekNumber:1,cycleKey:pathWeekKey(q.pathId,1)};
+      return {...q,cycleType:"week" as const,cycleKey:active.cycleKey,pathWeekNumber:active.weekNumber,dueWeek:String(active.weekNumber)};
     }
-    if(q.kind==="daily"||q.kind==="boss")return {...q,cycleType:"day" as const,cycleKey:dayKey};
+    if((q.kind==="daily"||q.kind==="boss")&&!q.cycleKey)return {...q,cycleType:"day" as const,cycleKey:dayKey};
     return q;
   });
 
   if(input.paths.length){
     for(const path of input.paths){
-      let week=pathWeeks[path.id]||{weekNumber:1,cycleKey:pathWeekKey(path.id,1)};
+      let week=pathWeeks[path.id];
       let workingState={...input,quests,pathWeeks:{...pathWeeks,[path.id]:week}};
 
-      // As soon as this path's Trials + Boss are Proven, permanently archive that
-      // Week and advance only this path to a brand-new Weekly Trial set.
-      if(pathWeekCleared(workingState,path.id,week.cycleKey)){
+      // One call may advance multiple already-cleared stale weeks safely.
+      while(pathWeekCleared(workingState,path.id,week.cycleKey)){
         if(!history.some(h=>h.id===`week-${path.id}-${week.weekNumber}`)){
           history=[snapshotPathWeek(workingState,path,week.cycleKey,week.weekNumber),...history];
         }
         week={weekNumber:week.weekNumber+1,cycleKey:pathWeekKey(path.id,week.weekNumber+1)};
+        pathWeeks[path.id]=week;
+        workingState={...workingState,quests,pathWeeks:{...pathWeeks}};
       }
       pathWeeks[path.id]=week;
 
@@ -178,13 +189,12 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
 
   const activeNumbers=Object.values(pathWeeks).map(w=>w.weekNumber);
   const displayWeek=activeNumbers.length?Math.min(...activeNumbers):1;
-  const displayKey=`campaign-week-${displayWeek}`;
 
   return {
     ...input,
     quests,
     pathWeeks,
-    cycles:{dayKey,weekKey:displayKey,calendarWeekKey,weekNumber:displayWeek},
+    cycles:{dayKey,weekKey:`campaign-week-${displayWeek}`,calendarWeekKey,weekNumber:displayWeek},
     cycleHistory:history.slice(0,260)
   };
 }
