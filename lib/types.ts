@@ -1,5 +1,6 @@
 export type VisualStage = "sealed" | "open" | "inscribed" | "ornamented" | "mastered";
 export type QuestKind = "daily" | "weekly" | "boss";
+export type CycleType = "day" | "week";
 
 export type Quest = {
   id: string;
@@ -10,6 +11,9 @@ export type Quest = {
   kind: QuestKind;
   nodeId?: string;
   dueWeek?: string;
+  cycleType?: CycleType;
+  cycleKey?: string;
+  createdAt?: string;
   done?: boolean;
   evidence?: string;
   completedAt?: string;
@@ -43,10 +47,38 @@ export type ArchiveEntry = {
   xp: number;
 };
 
+export type CycleQuestRecord = {
+  id: string;
+  pathId: string;
+  title: string;
+  kind: QuestKind;
+  xp: number;
+  done: boolean;
+  evidence?: string;
+  completedAt?: string;
+};
+
+export type CycleSnapshot = {
+  id: string;
+  type: CycleType;
+  cycleKey: string;
+  closedAt: string;
+  proven: number;
+  earnedXp: number;
+  quests: CycleQuestRecord[];
+};
+
+export type CycleState = {
+  dayKey: string;
+  weekKey: string;
+};
+
 export type AppState = {
   xp: number;
   momentum: number;
   paths: SkillPath[];
   quests: Quest[];
   archive: ArchiveEntry[];
+  cycles?: CycleState;
+  cycleHistory?: CycleSnapshot[];
 };
