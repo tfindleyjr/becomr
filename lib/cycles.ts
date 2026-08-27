@@ -49,6 +49,41 @@ function dayTrial(path:SkillPath,state:AppState,dayKey:string):Quest{
   };
 }
 
+function weeklyTrials(path:SkillPath,state:AppState,weekKey:string):Quest[]{
+  const idx=currentNodeIndex(state,path);
+  const current=path.nodes[Math.min(idx,path.nodes.length-1)];
+  const next=path.nodes[Math.min(idx+1,path.nodes.length-1)] || current;
+  const completed=state.quests.filter(q=>q.pathId===path.id&&q.done).length;
+  return [
+    {
+      id:`weekly-trial-1-${weekKey}-${path.id}`,
+      pathId:path.id,
+      nodeId:current?.id,
+      title:`WEEK TRIAL I — Sharpen ${current?.title || path.name}`,
+      proof:`Produce one focused, measurable repetition or result that strengthens ${current?.title || path.name}. It should be cleaner or more independent than an earlier Proof.`,
+      xp:Math.min(95,45+completed*2),
+      kind:"weekly_trial",
+      cycleType:"week",
+      cycleKey:weekKey,
+      dueWeek:weekKey,
+      createdAt:new Date().toISOString()
+    },
+    {
+      id:`weekly-trial-2-${weekKey}-${path.id}`,
+      pathId:path.id,
+      nodeId:next?.id,
+      title:`WEEK TRIAL II — Bridge Toward ${next?.title || path.name}`,
+      proof:`Complete one measurable challenge that combines your current capability with an element of ${next?.title || "the next capability"}.`,
+      xp:Math.min(120,60+completed*2),
+      kind:"weekly_trial",
+      cycleType:"week",
+      cycleKey:weekKey,
+      dueWeek:weekKey,
+      createdAt:new Date().toISOString()
+    }
+  ];
+}
+
 function weekBoss(path:SkillPath,state:AppState,weekKey:string):Quest{
   const idx=currentNodeIndex(state,path);
   const next=path.nodes[Math.min(idx+1,path.nodes.length-1)] || path.nodes[idx];
@@ -75,7 +110,7 @@ export function activeDayQuests(state:AppState,date=new Date()){
 
 export function activeWeekQuests(state:AppState,date=new Date()){
   const key=isoWeekKey(date);
-  return state.quests.filter(q=>q.kind==="weekly"&&(!q.cycleKey||q.cycleKey===key));
+  return state.quests.filter(q=>(q.kind==="weekly_trial"||q.kind==="weekly")&&(!q.cycleKey||q.cycleKey===key));
 }
 
 export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
@@ -88,7 +123,7 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
 
   quests=quests.map(q=>{
     if(q.cycleKey)return q;
-    if(q.kind==="weekly")return {...q,cycleType:"week" as const,cycleKey:weekKey,dueWeek:weekKey};
+    if(q.kind==="weekly"||q.kind==="weekly_trial")return {...q,cycleType:"week" as const,cycleKey:weekKey,dueWeek:weekKey};
     if(q.kind==="daily"||q.kind==="boss")return {...q,cycleType:"day" as const,cycleKey:dayKey};
     return q;
   });
@@ -107,6 +142,10 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
     for(const path of input.paths){
       const hasDay=quests.some(q=>q.pathId===path.id&&(q.kind==="daily"||q.kind==="boss")&&q.cycleKey===dayKey);
       if(!hasDay)quests.push(dayTrial(path,{...input,quests},dayKey));
+
+      const hasWeeklyTrials=quests.some(q=>q.pathId===path.id&&q.kind==="weekly_trial"&&q.cycleKey===weekKey);
+      if(!hasWeeklyTrials)quests.push(...weeklyTrials(path,{...input,quests},weekKey));
+
       const hasWeek=quests.some(q=>q.pathId===path.id&&q.kind==="weekly"&&q.cycleKey===weekKey);
       if(!hasWeek)quests.push(weekBoss(path,{...input,quests},weekKey));
     }
