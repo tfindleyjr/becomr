@@ -4,8 +4,10 @@ import "./readability.css";
 import "./forge.css";
 import "./customer-journey.css";
 import "./mobile-pwa.css";
+import "./continuation.css";
 import TutorialOverlay from "./TutorialOverlay";
 import PWAClient from "./PWAClient";
+import ContinuationUnlock from "./ContinuationUnlock";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
@@ -23,5 +25,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<PWAClient/><TutorialOverlay/></body></html>;
+  return <html lang="en"><body>{children}<ContinuationUnlock/><PWAClient/><TutorialOverlay/></body></html>;
 }
