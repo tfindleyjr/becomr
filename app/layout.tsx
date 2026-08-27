@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import TutorialOverlay from "./TutorialOverlay";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
@@ -16,5 +17,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body>{children}<TutorialOverlay/></body></html>;
 }
