@@ -31,7 +31,7 @@ function snapshot(type:"day"|"week",cycleKey:string,state:AppState,weekNumber?:n
     quests:relevant.map(q=>({id:q.id,pathId:q.pathId,title:q.title,kind:q.kind,xp:q.xp,done:Boolean(q.done),evidence:q.evidence,completedAt:q.completedAt})),
     paths:type==="week"?state.paths.map(path=>{
       const idx=currentNodeIndex(state,path);
-      const boss=relevant.find(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done);
+      const bosses=relevant.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done).map(q=>({title:q.title,xp:q.xp}));
       return {
         pathId:path.id,
         pathName:path.name,
@@ -39,8 +39,7 @@ function snapshot(type:"day"|"week",cycleKey:string,state:AppState,weekNumber?:n
         earnedXp:pathEarnedXp(state,path.id),
         progress:pathProgress(state,path),
         nodeTitle:path.nodes[Math.min(idx,path.nodes.length-1)]?.title||path.name,
-        bossTitle:boss?.title,
-        bossXp:boss?.xp
+        bosses
       };
     }):undefined
   };
@@ -138,7 +137,6 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
   let quests=[...input.quests];
   let history=[...(input.cycleHistory||[])];
 
-  // Legacy completed weekly work is history, not part of the new active campaign.
   quests=quests.map(q=>{
     if(q.cycleKey)return q;
     if(q.kind==="weekly"||q.kind==="weekly_trial"){
@@ -154,8 +152,6 @@ export function ensureCurrentCycles(input:AppState,date=new Date()):AppState{
     quests=quests.filter(q=>!(q.cycleType==="day"&&q.cycleKey===previousDay&&!q.done));
   }
 
-  // Calendar rollover is gated. The next week cannot start until the active week's
-  // Trials AND Boss for every path are Proven.
   const workingState={...input,quests,cycles:{dayKey:previousDay||dayKey,weekKey:activeWeekKey,calendarWeekKey,weekNumber}};
   if(activeWeekKey!==calendarWeekKey&&weeklyCampaignCleared(workingState,activeWeekKey)){
     if(!history.some(h=>h.type==="week"&&h.cycleKey===activeWeekKey)){
