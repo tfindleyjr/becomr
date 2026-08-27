@@ -45,7 +45,7 @@ export function weeklyBossUnlocked(state:AppState,pathId:string){
 
 export function weeklyBosses(state:AppState){
   const currentWeek=state.cycles?.weekKey;
-  return state.quests.filter(q=>q.kind==="weekly"&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek)&&weeklyBossUnlocked(state,q.pathId));
+  return state.quests.filter(q=>q.kind==="weekly"&&!q.done&&(!currentWeek||!q.cycleKey||q.cycleKey===currentWeek)&&weeklyBossUnlocked(state,q.pathId));
 }
 
 export function weeklyScore(state:AppState){
