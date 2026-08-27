@@ -65,8 +65,7 @@ export type PathWeekSnapshot = {
   earnedXp: number;
   progress: number;
   nodeTitle: string;
-  bossTitle?: string;
-  bossXp?: number;
+  bosses?: { title:string; xp:number }[];
 };
 
 export type CycleSnapshot = {
