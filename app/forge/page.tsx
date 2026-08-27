@@ -41,10 +41,9 @@ export default function ForgePage(){
       quests:[...state.quests,...quests]
     };
     setState(next);
-    saveLocalState(next);
+    saveLocalState(next,user?.id);
     if(user) await saveCloudState(user.id,next);
     setSaved(true);
-    setTimeout(()=>setSaved(false),2500);
   }
 
   if(!ready) return <main className="forge-page"><p className="forge-loading">ALIGNING THE FORGE…</p></main>;
@@ -55,7 +54,7 @@ export default function ForgePage(){
       <a href="/" className="forge-brand">BECOMR <span>✥</span></a>
       <div>
         {saved&&<span className="forge-saved">✦ PATH INSCRIBED</span>}
-        <a href="/">RETURN TO COMPASS</a>
+        <a href="/">{saved?"VIEW MY BECOMR":"RETURN TO BECOMR"}</a>
       </div>
     </header>
 
@@ -66,5 +65,12 @@ export default function ForgePage(){
     </div>
 
     <AIForge onAdd={addGenerated}/>
+
+    {saved&&<div className="forge-next-step">
+      <p className="kicker">FIRST BRANCH CREATED</p>
+      <h2>Your Compass has changed.</h2>
+      <p>The new path, first Trial, and Weekly Boss are now part of the same build.</p>
+      <a href="/#compass">SEE IT ON MY COMPASS →</a>
+    </div>}
   </main>;
 }
