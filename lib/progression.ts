@@ -53,3 +53,33 @@ export function generatedWeeklyBoss(path:SkillPath,nodeTitle:string):Quest{
     kind:"weekly"
   };
 }
+
+export function generatedBonusTrial(state:AppState,path:SkillPath):Quest{
+  const idx=currentNodeIndex(state,path);
+  const node=path.nodes[Math.min(idx,path.nodes.length-1)];
+  const completed=state.quests.filter(q=>q.pathId===path.id&&q.done).length;
+  return {
+    id:`bonus-${path.id}-${Date.now()}`,
+    pathId:path.id,
+    nodeId:node?.id,
+    title:`BONUS TRIAL — Push ${node?.title || path.name} Further`,
+    proof:`Produce one new measurable result that is harder, cleaner, faster, more independent, or more complete than your previous Proof in ${path.name}. Do not repeat the exact same accomplishment.`,
+    xp:Math.min(85,35+completed*5),
+    kind:"daily"
+  };
+}
+
+export function generatedStretchWeeklyBoss(state:AppState,path:SkillPath):Quest{
+  const idx=currentNodeIndex(state,path);
+  const nextNode=path.nodes[Math.min(idx+1,path.nodes.length-1)] || path.nodes[idx];
+  const weeklyWins=state.quests.filter(q=>q.pathId===path.id&&q.kind==="weekly"&&q.done).length;
+  return {
+    id:`stretch-week-${path.id}-${Date.now()}`,
+    pathId:path.id,
+    nodeId:nextNode?.id,
+    title:`STRETCH BOSS — Advance Toward ${nextNode?.title || path.name}`,
+    proof:`Complete a larger real-world result that combines what you have already Proven in ${path.name} and moves you visibly closer to ${nextNode?.title || "the next capability"}. The result must be distinct from your previous Weekly Bosses.`,
+    xp:Math.min(450,275+weeklyWins*25),
+    kind:"weekly"
+  };
+}
