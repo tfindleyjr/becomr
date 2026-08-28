@@ -16,6 +16,7 @@ import CycleManager from "./CycleManager";
 import WeeklyTrialDeck from "./WeeklyTrialDeck";
 import WeeklyProgressLedger from "./WeeklyProgressLedger";
 import MobileAppShell from "./MobileAppShell";
+import AdaptiveTrialEngine from "./AdaptiveTrialEngine";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
@@ -33,5 +34,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<CycleManager/><WeeklyTrialDeck/><WeeklyProgressLedger/><ContinuationUnlock/><PWAClient/><TutorialOverlay/><MobileAppShell/></body></html>;
+  return <html lang="en"><body>{children}<CycleManager/><AdaptiveTrialEngine/><WeeklyTrialDeck/><WeeklyProgressLedger/><ContinuationUnlock/><PWAClient/><TutorialOverlay/><MobileAppShell/></body></html>;
 }
