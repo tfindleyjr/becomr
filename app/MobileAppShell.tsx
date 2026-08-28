@@ -15,9 +15,11 @@ const pages:{id:PageId;glyph:string;label:string;hint:string}[]=[
 export default function MobileAppShell(){
   const [open,setOpen]=useState(false);
   const [page,setPage]=useState<PageId>("command");
+  const [onForge,setOnForge]=useState(false);
 
   useEffect(()=>{
     function sync(){
+      setOnForge(window.location.pathname.startsWith("/forge"));
       const hash=window.location.hash.replace("#","") as PageId;
       if(pages.some(p=>p.id===hash))setPage(hash);
     }
@@ -30,7 +32,7 @@ export default function MobileAppShell(){
     const desktopButtons=[...document.querySelectorAll<HTMLButtonElement>(".instrument-nav button")];
     const target=desktopButtons.find(button=>button.textContent?.toLowerCase().includes(id));
     if(target)target.click();
-    else window.location.hash=id;
+    else window.location.href=`/#${id}`;
     setPage(id);
     setOpen(false);
   }
@@ -44,7 +46,7 @@ export default function MobileAppShell(){
 
   return <div className="mobile-app-shell" aria-label="BECOMR mobile navigation">
     <div className="mobile-app-bar">
-      <div className="mobile-app-current"><span>{current.glyph}</span><div><small>CURRENT</small><strong>{current.label}</strong></div></div>
+      <div className="mobile-app-current"><span>{onForge?"✦":current.glyph}</span><div><small>CURRENT</small><strong>{onForge?"AI Forge":current.label}</strong></div></div>
       <button className="mobile-menu-trigger" onClick={()=>setOpen(true)} aria-expanded={open}><i/><i/><span>MENU</span></button>
     </div>
 
@@ -52,13 +54,13 @@ export default function MobileAppShell(){
       <section className="mobile-drawer" onClick={e=>e.stopPropagation()} aria-modal="true" role="dialog">
         <header><div><small>BECOMR / NAVIGATION</small><h2>Where should the Compass point?</h2></div><button onClick={()=>setOpen(false)} aria-label="Close menu">×</button></header>
         <nav className="mobile-drawer-pages">
-          {pages.map(item=><button key={item.id} className={page===item.id?"active":""} onClick={()=>navigate(item.id)}>
+          {pages.map(item=><button key={item.id} className={!onForge&&page===item.id?"active":""} onClick={()=>navigate(item.id)}>
             <span>{item.glyph}</span><div><strong>{item.label}</strong><small>{item.hint}</small></div><b>→</b>
           </button>)}
         </nav>
         <div className="mobile-drawer-tools">
           <a href="/forge"><span>✦</span><div><strong>AI Forge</strong><small>Create another capability path</small></div><b>→</b></a>
-          {page==="weekly"&&<>
+          {!onForge&&page==="weekly"&&<>
             <button onClick={()=>action("becomr-open-weekly-trials")}><span>◇</span><div><strong>Weekly Trials</strong><small>Open this path week's Trials</small></div></button>
             <button onClick={()=>action("becomr-open-weekly-progress")}><span>▦</span><div><strong>Weekly Progress</strong><small>Past weeks, Bosses and Proof</small></div></button>
           </>}
