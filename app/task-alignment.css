@@ -1,0 +1,8 @@
+[data-ai-aligning='true']{position:relative;overflow:hidden!important}
+.task-inline-aligning{position:absolute;z-index:8;left:8px;right:8px;bottom:7px;min-height:30px;display:grid;grid-template-columns:12px auto 1fr;align-items:center;gap:8px;padding:7px 9px;border:1px solid rgba(201,151,66,.34);background:rgba(12,11,9,.94);backdrop-filter:blur(8px);pointer-events:none;color:#e7c77d;box-shadow:0 6px 24px rgba(0,0,0,.22)}
+.task-inline-aligning>i{width:8px;height:8px;border:1px solid #c99742;border-top-color:transparent;border-radius:50%;animation:task-align-spin .8s linear infinite}
+.task-inline-aligning>b{font:600 5.5px var(--ritual);letter-spacing:1.2px;white-space:nowrap}.task-inline-aligning>small{font:500 8px var(--ui);color:#a9aaa2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.task-inline-dock{top:calc(100% + 5px);bottom:auto;left:0;right:0;grid-template-columns:12px 1fr}.task-inline-dock small{display:none}
+[data-ai-aligning='true'].trial-row,[data-ai-aligning='true'].weekly-trial-row,[data-ai-aligning='true'].weekly-card{padding-bottom:50px!important}
+[data-ai-aligning='true'].generate-row{padding-bottom:45px!important}
+@keyframes task-align-spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.task-inline-aligning{left:6px;right:6px;bottom:6px;grid-template-columns:11px 1fr;padding:7px 8px}.task-inline-aligning>small{display:none}.task-inline-aligning>b{font-size:5.2px}.task-inline-dock{top:auto;bottom:calc(100% + 6px)}}
