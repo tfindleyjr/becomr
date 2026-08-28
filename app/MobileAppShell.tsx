@@ -43,11 +43,15 @@ export default function MobileAppShell(){
   }
 
   const current=pages.find(p=>p.id===page)||pages[0];
+  const weeklyActive=!onForge&&page==="weekly";
 
   return <div className="mobile-app-shell" aria-label="BECOMR mobile navigation">
-    <div className="mobile-app-bar">
+    <div className={`mobile-app-bar ${weeklyActive?"with-weekly-action":""}`}>
       <div className="mobile-app-current"><span>{onForge?"✦":current.glyph}</span><div><small>CURRENT</small><strong>{onForge?"AI Forge":current.label}</strong></div></div>
-      <button className="mobile-menu-trigger" onClick={()=>setOpen(true)} aria-expanded={open}><i/><i/><span>MENU</span></button>
+      <div className="mobile-app-actions">
+        {weeklyActive&&<button className="mobile-weekly-trials-trigger" onClick={()=>action("becomr-open-weekly-trials")}><span>◇</span><b>TRIALS</b></button>}
+        <button className="mobile-menu-trigger" onClick={()=>setOpen(true)} aria-expanded={open}><i/><i/><span>MENU</span></button>
+      </div>
     </div>
 
     {open&&<div className="mobile-drawer-backdrop" onClick={()=>setOpen(false)}>
@@ -60,7 +64,7 @@ export default function MobileAppShell(){
         </nav>
         <div className="mobile-drawer-tools">
           <a href="/forge"><span>✦</span><div><strong>AI Forge</strong><small>Create another capability path</small></div><b>→</b></a>
-          {!onForge&&page==="weekly"&&<>
+          {weeklyActive&&<>
             <button onClick={()=>action("becomr-open-weekly-trials")}><span>◇</span><div><strong>Weekly Trials</strong><small>Open this path week's Trials</small></div></button>
             <button onClick={()=>action("becomr-open-weekly-progress")}><span>▦</span><div><strong>Weekly Progress</strong><small>Past weeks, Bosses and Proof</small></div></button>
           </>}
