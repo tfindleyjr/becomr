@@ -66,7 +66,9 @@ export default function ExpansionHub(){
 
   function notify(title:string,body:string){
     if("Notification" in window&&Notification.permission==="granted"){
-      navigator.serviceWorker?.ready.then(reg=>reg.showNotification(title,{body,icon:"/assets/becomr-compass-tree.png",badge:"/assets/becomr-compass-tree.png"})).catch(()=>new Notification(title,{body}));
+      if("serviceWorker" in navigator){
+        navigator.serviceWorker.ready.then(reg=>reg.showNotification(title,{body,icon:"/assets/becomr-compass-tree.png",badge:"/assets/becomr-compass-tree.png"})).catch(()=>{new Notification(title,{body})});
+      }else new Notification(title,{body});
     }
   }
 
@@ -107,15 +109,10 @@ export default function ExpansionHub(){
       <button className="expansion-close" onClick={()=>setOpen(false)}>×</button>
       <header><p className="kicker">BECOMR / EXPANDED BUILD</p><h2>Capability leaves a <em>record.</em></h2></header>
       <nav className="expansion-tabs">{(["marks","constellations","notifications","share","market"] as View[]).map(v=><button key={v} className={view===v?"active":""} onClick={()=>setView(v)}>{v.toUpperCase()}</button>)}</nav>
-
       {view==="marks"&&<div className="marks-grid">{marks.map(m=><article key={m.id} className={m.earned?"earned":"sealed"}><span>{m.glyph}</span><small>{m.earned?"INSCRIBED":"SEALED"}</small><h3>{m.title}</h3><p>{m.description}</p></article>)}</div>}
-
       {view==="constellations"&&<div className="constellation-grid">{constellations.map(c=><article key={c.id} className={c.unlocked?"unlocked":"sealed"}><span>{c.glyph}</span><small>{c.unlocked?"CONSTELLATION FOUND":"REQUIRES TWO DEVELOPED PATHS"}</small><h3>{c.title}</h3><p>{c.description}</p>{c.pathIds.length>0&&<div>{c.pathIds.map(id=><b key={id}>{state.paths.find(p=>p.id===id)?.name}</b>)}</div>}</article>)}</div>}
-
       {view==="notifications"&&<div className="notification-panel"><h3>Reorientation, not nagging.</h3><p>BECOMR can surface open Trials, unlocked Bosses, and new Marks when the app is available. Browser/PWA notifications are opt-in.</p><button className="expansion-primary" onClick={enableNotifications}>{prefs.enabled?"NOTIFICATIONS ENABLED":"ENABLE NOTIFICATIONS"}</button>{prefs.enabled&&<div className="notification-toggles"><label><input type="checkbox" checked={prefs.daily} onChange={e=>updatePrefs({...prefs,daily:e.target.checked})}/>Open Daily Trials</label><label><input type="checkbox" checked={prefs.weekly} onChange={e=>updatePrefs({...prefs,weekly:e.target.checked})}/>Weekly Bosses</label><label><input type="checkbox" checked={prefs.milestones} onChange={e=>updatePrefs({...prefs,milestones:e.target.checked})}/>Marks & Milestones</label></div>}<small>Background scheduled push delivery still requires a production push service; this build notifies on app open/focus and supported PWA sessions.</small></div>}
-
       {view==="share"&&<div className="share-build"><div className="share-card"><img src="/assets/becomr-compass-tree.png" alt=""/><p>BECOMR / CURRENT BUILD</p><h3>LVL {Math.floor(state.xp/500)+1}</h3><strong>{state.xp} XP · {state.quests.filter(q=>q.done).length} PROVEN</strong>{state.paths.slice(0,5).map(p=><div key={p.id}><span>{p.glyph} {p.name}</span><b>{pathProgress(state,p)}%</b></div>)}</div><button className="expansion-primary" onClick={shareBuild}>SHARE BUILD</button><p className="expansion-note">Uses the device share sheet when available; otherwise copies a concise Build summary.</p></div>}
-
       {view==="market"&&<div className="market-wrap"><div className="market-intro"><div><small>CREATOR TREES / V1</small><h3>Install a proven direction.</h3></div><p>Templates provide the structure; BECOMR still adapts Trials to the individual after installation.</p></div><div className="market-grid">{treeTemplates.map(t=><article key={t.id}><span>{t.glyph}</span><small>{t.creator} · {t.tags.join(" / ")}</small><h3>{t.title}</h3><p>{t.description}</p><footer><b>{t.nodes.length} NODES</b><button onClick={()=>installTemplate(t.id)}>INSCRIBE TREE</button></footer></article>)}</div>{state.paths.length>0&&<div className="creator-export"><small>CREATOR MODE</small><h3>Turn one of your Paths into a tree blueprint.</h3><div>{state.paths.map(p=><button key={p.id} onClick={()=>exportPath(p)}><span>{p.glyph}</span>{p.name}<b>EXPORT</b></button>)}</div><p>Phase 30 starts with portable creator blueprints and an installable catalog. Public publishing, ratings and paid creator payouts require the production marketplace backend.</p></div>}</div>}
     </section></div>}
   </>;
