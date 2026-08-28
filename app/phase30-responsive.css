@@ -1,0 +1,168 @@
+/* BECOMR v0.24.1 — desktop utility cleanup + Phase 25–30 mobile polish */
+
+/* Desktop utilities: compact, horizontal, and intentionally stacked. */
+@media(min-width:901px){
+  .tutorial-launch-global{
+    position:fixed!important;
+    z-index:128!important;
+    top:16px!important;
+    right:18px!important;
+    bottom:auto!important;
+    left:auto!important;
+    width:138px!important;
+    min-width:0!important;
+    height:34px!important;
+    padding:0 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+    transform:none!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    border:1px solid rgba(201,151,66,.38)!important;
+    background:rgba(14,13,11,.94)!important;
+    box-shadow:0 10px 30px rgba(0,0,0,.22)!important;
+  }
+  .expansion-launch{
+    position:fixed!important;
+    z-index:127!important;
+    top:58px!important;
+    right:18px!important;
+    bottom:auto!important;
+    left:auto!important;
+    width:188px!important;
+    min-width:0!important;
+    min-height:42px!important;
+    padding:8px 11px!important;
+    transform:none!important;
+    overflow:hidden!important;
+    box-shadow:0 12px 34px rgba(0,0,0,.24)!important;
+  }
+  .expansion-launch>div{min-width:0}
+  .expansion-launch small,.expansion-launch strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body:has(.auth-shell) .tutorial-launch-global,
+  body:has(.auth-shell) .expansion-launch{display:none!important}
+}
+
+/* Medium desktop/laptop: keep utilities visible without stealing page width. */
+@media(min-width:901px) and (max-width:1180px){
+  .tutorial-launch-global{right:10px!important;width:122px!important}
+  .expansion-launch{right:10px!important;width:164px!important}
+  .page{padding-left:28px!important;padding-right:28px!important}
+}
+
+@media(max-width:900px){
+  /* Global floating controls belong in the app drawer on mobile. */
+  .tutorial-launch-global,.expansion-launch{display:none!important}
+
+  html,body{max-width:100%;overflow-x:hidden}
+  body{padding-bottom:calc(82px + env(safe-area-inset-bottom))!important}
+  .shell{padding-bottom:calc(104px + env(safe-area-inset-bottom))!important}
+
+  /* Page chrome reads as an app, not a compressed desktop site. */
+  .page{padding:24px 16px 36px!important;max-width:none!important}
+  .command-heading,.compass-title,.archive-heading{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:flex-start!important;
+    gap:14px!important;
+    padding-bottom:20px!important;
+  }
+  .command-heading h1,.compass-title h1,.archive-heading h1{
+    font-size:clamp(43px,12vw,62px)!important;
+    line-height:.92!important;
+    letter-spacing:-1.4px!important;
+  }
+  .compass-title>p:last-child{max-width:none!important;margin:0!important;font-size:12px!important;line-height:1.6!important}
+  .command-forge{align-self:flex-start}
+
+  /* Compass stays visually important without consuming several phone screens. */
+  .sig-wrap:not(.compact){width:100%!important;max-width:620px!important;margin:8px auto 16px!important}
+  .sig-wrap.compact{max-width:350px!important;margin-inline:auto!important}
+  .living-compass .sig-svg,.living-empty .sig-svg{max-height:68vh!important}
+  .path-name{font-size:8px!important}.path-stage{font-size:6px!important}
+
+  /* Path inspector becomes a readable vertical capability sheet. */
+  .path-inspector{padding-top:22px!important}
+  .inspector-intro{display:grid!important;grid-template-columns:48px minmax(0,1fr)!important;gap:12px!important;align-items:center!important}
+  .big-glyph{width:44px!important;height:44px!important}
+  .inspector-intro h2{font-size:31px!important;line-height:1!important}
+  .stage-readout{grid-column:1/-1!important;display:grid!important;grid-template-columns:1fr auto auto!important;align-items:center!important;border-top:1px solid rgba(201,151,66,.16);padding-top:12px!important;margin-top:4px!important;text-align:left!important}
+  .stage-readout strong,.stage-readout em{justify-self:end}
+  .branch-line{display:grid!important;grid-template-columns:1fr!important;gap:0!important;overflow:visible!important}
+  .branch-node{min-width:0!important;padding:13px 0!important;border-bottom:1px solid rgba(239,228,201,.07)}
+
+  /* Expanded Build / Marks / Marketplace behaves like a native bottom sheet. */
+  .expansion-backdrop,.mark-ceremony{
+    align-items:flex-end!important;
+    place-items:end stretch!important;
+    padding:0!important;
+    background:rgba(2,2,1,.72)!important;
+  }
+  .expansion-sheet{
+    width:100%!important;
+    max-width:none!important;
+    max-height:calc(88dvh - env(safe-area-inset-bottom))!important;
+    border-left:0!important;
+    border-right:0!important;
+    border-bottom:0!important;
+    padding:22px 16px calc(26px + env(safe-area-inset-bottom))!important;
+    border-radius:0!important;
+    overscroll-behavior:contain;
+  }
+  .expansion-sheet>header{padding-right:42px}
+  .expansion-sheet>header h2{font-size:clamp(37px,11vw,54px)!important;margin-bottom:18px!important}
+  .expansion-close{position:sticky!important;float:right;top:8px!important;z-index:5;background:rgba(16,14,11,.96)!important}
+  .expansion-tabs{
+    position:sticky!important;
+    top:0!important;
+    z-index:4!important;
+    margin:0 -16px 20px!important;
+    padding:0 12px!important;
+    background:rgba(16,14,11,.985)!important;
+    overflow-x:auto!important;
+    scrollbar-width:none;
+  }
+  .expansion-tabs::-webkit-scrollbar{display:none}
+  .expansion-tabs button{flex:0 0 auto!important;min-width:auto!important;padding:13px 14px!important;font-size:6px!important}
+  .marks-grid,.constellation-grid,.market-grid{grid-template-columns:1fr!important;gap:10px!important}
+  .marks-grid article,.constellation-grid article,.market-grid article{min-height:0!important;padding:17px!important}
+  .marks-grid h3,.constellation-grid h3,.market-grid h3,.notification-panel h3,.creator-export h3,.market-intro h3{font-size:26px!important}
+  .share-build{grid-template-columns:1fr!important;gap:18px!important}
+  .share-card{min-height:310px!important;padding:20px!important}.share-card>h3{font-size:58px!important}.share-card>img{width:330px!important}
+  .market-intro{display:block!important}.market-intro p{max-width:none!important}
+  .market-grid article footer{gap:12px}.market-grid article footer button{min-height:40px}
+  .creator-export>div{grid-template-columns:1fr!important}
+  .notification-panel{max-width:none!important}.notification-toggles label{min-height:48px}
+
+  /* Ceremony also behaves like a focused app sheet on phones. */
+  .mark-ceremony{padding:12px 10px calc(76px + env(safe-area-inset-bottom))!important;place-items:center!important}
+  .mark-ceremony>section{width:100%!important;max-width:460px!important;padding:34px 20px!important}
+
+  /* Drawer must expose every Phase 25–30 action without cramped two-column buttons. */
+  .mobile-drawer{max-height:88dvh!important;padding-bottom:calc(18px + env(safe-area-inset-bottom))!important}
+  .mobile-drawer-tools{grid-template-columns:1fr!important;gap:6px!important}
+  .mobile-drawer-tools>a,.mobile-drawer-tools>button{
+    min-height:58px!important;
+    grid-template-columns:28px minmax(0,1fr) auto!important;
+    align-items:center!important;
+    padding:10px 11px!important;
+  }
+  .mobile-drawer-tools strong{font-size:7px!important}.mobile-drawer-tools small{font-size:8px!important;line-height:1.35!important}
+
+  /* Modal/evidence surfaces need clearance above the persistent app bar. */
+  .proof-sheet,.editor-sheet,.path-control-sheet,.path-edit-sheet,.weekly-trial-deck,.weekly-ledger-sheet,.weekly-history-sheet{
+    margin-bottom:calc(68px + env(safe-area-inset-bottom))!important;
+    max-height:calc(82dvh - env(safe-area-inset-bottom))!important;
+  }
+}
+
+@media(max-width:520px){
+  .page{padding-left:14px!important;padding-right:14px!important}
+  .command-heading h1,.compass-title h1,.archive-heading h1{font-size:44px!important}
+  .expansion-sheet{padding-left:14px!important;padding-right:14px!important}
+  .expansion-tabs{margin-left:-14px!important;margin-right:-14px!important}
+  .mobile-app-current strong{max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
