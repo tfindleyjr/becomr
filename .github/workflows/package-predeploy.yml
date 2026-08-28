@@ -13,10 +13,22 @@ jobs:
     steps:
       - name: Checkout current build
         uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm install
+      - name: Verify production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://hzhxbjvzgnrrtrevhokt.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_6GpyGYu4iB8u8OmEtBes2Q_Cl62FoWg
       - name: Prepare clean source snapshot
         run: |
           mkdir -p package/BECOMR-v0.26.0-Pre-Deployment
-          rsync -a --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='.env.local' ./ package/BECOMR-v0.26.0-Pre-Deployment/
+          rsync -a --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='.env.local' --exclude='package' ./ package/BECOMR-v0.26.0-Pre-Deployment/
       - name: Upload source package
         uses: actions/upload-artifact@v4
         with:
