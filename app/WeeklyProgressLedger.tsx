@@ -18,9 +18,14 @@ export default function WeeklyProgressLedger(){
       setVisible(onWeekly);
       if(!onWeekly){setOpen(false);setSelected(null)}
     }
+    const openFromMobile=()=>setOpen(true);
     sync();
     window.addEventListener("hashchange",sync);
-    return()=>window.removeEventListener("hashchange",sync);
+    window.addEventListener("becomr-open-weekly-progress",openFromMobile);
+    return()=>{
+      window.removeEventListener("hashchange",sync);
+      window.removeEventListener("becomr-open-weekly-progress",openFromMobile);
+    };
   },[]);
 
   useEffect(()=>{
