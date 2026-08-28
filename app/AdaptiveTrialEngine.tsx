@@ -23,14 +23,19 @@ export default function AdaptiveTrialEngine(){
         if(recentProofs.length===0)continue;
 
         running.current.add(path.id);
+        window.dispatchEvent(new CustomEvent("becomr-adaptive-status",{detail:{pathId:path.id,pathName:path.name,status:"loading"}}));
         try{
           const nodeIndex=currentNodeIndex(current,path);const node=path.nodes[Math.min(nodeIndex,path.nodes.length-1)];const latestArchive=current.archive[0]||null;const weekNumber=current.pathWeeks?.[path.id]?.weekNumber||1;
           const res=await fetch("/api/ai/next-trial",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({path:{name:path.name,capability:path.capability},currentNode:node?.title||path.name,recentProofs,archive:latestArchive,weekNumber,progress:pathProgress(current,path),capacity:path.capacity||"steady"})});
-          const raw=await res.text();if(!raw)continue;let data:any;try{data=JSON.parse(raw)}catch{continue}if(!res.ok||!data?.title||!data?.proof)continue;
+          const raw=await res.text();if(!raw)throw new Error("Empty adaptive response");let data:any;try{data=JSON.parse(raw)}catch{throw new Error("Invalid adaptive response")}if(!res.ok||!data?.title||!data?.proof)throw new Error(data?.error||"Adaptive Trial unavailable");
           const latest=loadLocalState(userId)||current;const stillOpen=latest.quests.find(q=>q.id===nextOpen.id&&!q.done&&!q.aiGenerated);if(!stillOpen)continue;
           const next:AppState={...latest,quests:latest.quests.map(q=>q.id===stillOpen.id?{...q,title:String(data.title),proof:String(data.proof),xp:Math.max(30,Math.min(100,Number(data.xp)||q.xp)),aiGenerated:true,adaptationReason:String(data.reason||""),difficulty:data.difficulty,prerequisiteNote:String(data.prerequisiteNote||""),proofKinds:q.proofKinds||["text","number","link","photo","video"]}:q)};
           saveLocalState(next,userId);if(userId)await saveCloudState(userId,next);window.dispatchEvent(new CustomEvent("becomr-adaptive-trial-ready",{detail:next}));window.dispatchEvent(new CustomEvent("becomr-cycle-updated",{detail:next}));
-        }catch(err){console.warn("BECOMR adaptive Trial fallback used",err)}finally{running.current.delete(path.id)}
+          window.dispatchEvent(new CustomEvent("becomr-adaptive-status",{detail:{pathId:path.id,pathName:path.name,status:"ready",title:String(data.title)}}));
+        }catch(err){
+          console.warn("BECOMR adaptive Trial fallback used",err);
+          window.dispatchEvent(new CustomEvent("becomr-adaptive-status",{detail:{pathId:path.id,pathName:path.name,status:"fallback"}}));
+        }finally{running.current.delete(path.id)}
       }
     }
     const onCycle=(event:Event)=>adaptState((event as CustomEvent<AppState>).detail);const initial=window.setTimeout(()=>adaptState(),1400);window.addEventListener("becomr-cycle-updated",onCycle);return()=>{window.clearTimeout(initial);window.removeEventListener("becomr-cycle-updated",onCycle)};
