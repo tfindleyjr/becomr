@@ -1,6 +1,16 @@
 export type VisualStage = "sealed" | "open" | "inscribed" | "ornamented" | "mastered";
 export type QuestKind = "daily" | "weekly_trial" | "weekly" | "boss";
 export type CycleType = "day" | "week";
+export type ProofKind = "text" | "number" | "link" | "photo" | "video" | "file";
+export type DifficultyBand = "recover" | "steady" | "stretch";
+
+export type ProofArtifact = {
+  id: string;
+  kind: ProofKind;
+  value: string;
+  label?: string;
+  createdAt: string;
+};
 
 export type Quest = {
   id: string;
@@ -17,9 +27,13 @@ export type Quest = {
   createdAt?: string;
   done?: boolean;
   evidence?: string;
+  evidenceArtifacts?: ProofArtifact[];
+  proofKinds?: ProofKind[];
   completedAt?: string;
   aiGenerated?: boolean;
   adaptationReason?: string;
+  difficulty?: DifficultyBand;
+  prerequisiteNote?: string;
 };
 
 export type SkillNode = {
@@ -28,6 +42,7 @@ export type SkillNode = {
   order: number;
   xpRequired: number;
   boss?: boolean;
+  prerequisite?: boolean;
 };
 
 export type SkillPath = {
@@ -38,6 +53,9 @@ export type SkillPath = {
   region: string;
   capability: string;
   nodes: SkillNode[];
+  paused?: boolean;
+  capacity?: "low" | "steady" | "high";
+  notes?: string;
 };
 
 export type ArchiveEntry = {
@@ -59,6 +77,7 @@ export type CycleQuestRecord = {
   done: boolean;
   pathWeekNumber?: number;
   evidence?: string;
+  evidenceArtifacts?: ProofArtifact[];
   completedAt?: string;
 };
 
