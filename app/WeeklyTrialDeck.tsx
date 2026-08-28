@@ -20,9 +20,14 @@ export default function WeeklyTrialDeck(){
       setVisible(onWeekly);
       if(!onWeekly)setExpanded(false);
     }
+    const openFromMobile=()=>setExpanded(true);
     syncVisibility();
     window.addEventListener("hashchange",syncVisibility);
-    return()=>window.removeEventListener("hashchange",syncVisibility);
+    window.addEventListener("becomr-open-weekly-trials",openFromMobile);
+    return()=>{
+      window.removeEventListener("hashchange",syncVisibility);
+      window.removeEventListener("becomr-open-weekly-trials",openFromMobile);
+    };
   },[]);
 
   useEffect(()=>{
