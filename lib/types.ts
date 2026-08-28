@@ -18,6 +18,8 @@ export type Quest = {
   done?: boolean;
   evidence?: string;
   completedAt?: string;
+  aiGenerated?: boolean;
+  adaptationReason?: string;
 };
 
 export type SkillNode = {
