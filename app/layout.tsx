@@ -10,6 +10,7 @@ import "./phase21-polish.css";
 import "./weekly-ledger.css";
 import "./mobile-app-shell.css";
 import "./phase23-24.css";
+import "./adaptive-status.css";
 import TutorialOverlay from "./TutorialOverlay";
 import PWAClient from "./PWAClient";
 import ContinuationUnlock from "./ContinuationUnlock";
@@ -21,6 +22,7 @@ import AdaptiveTrialEngine from "./AdaptiveTrialEngine";
 import AdaptiveWeeklyEngine from "./AdaptiveWeeklyEngine";
 import PathControlCenter from "./PathControlCenter";
 import Proof2Panel from "./Proof2Panel";
+import AdaptiveStatus from "./AdaptiveStatus";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
@@ -38,5 +40,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<CycleManager/><AdaptiveTrialEngine/><AdaptiveWeeklyEngine/><WeeklyTrialDeck/><WeeklyProgressLedger/><PathControlCenter/><Proof2Panel/><ContinuationUnlock/><PWAClient/><TutorialOverlay/><MobileAppShell/></body></html>;
+  return <html lang="en"><body>{children}<CycleManager/><AdaptiveTrialEngine/><AdaptiveWeeklyEngine/><AdaptiveStatus/><WeeklyTrialDeck/><WeeklyProgressLedger/><PathControlCenter/><Proof2Panel/><ContinuationUnlock/><PWAClient/><TutorialOverlay/><MobileAppShell/></body></html>;
 }
