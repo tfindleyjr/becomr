@@ -1,0 +1,26 @@
+name: Package Pre-Deployment Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/package-predeploy.yml'
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current build
+        uses: actions/checkout@v4
+      - name: Prepare clean source snapshot
+        run: |
+          mkdir -p package/BECOMR-v0.26.0-Pre-Deployment
+          rsync -a --exclude='.git' --exclude='node_modules' --exclude='.next' --exclude='.env.local' ./ package/BECOMR-v0.26.0-Pre-Deployment/
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: BECOMR-v0.26.0-Pre-Deployment
+          path: package/BECOMR-v0.26.0-Pre-Deployment
+          if-no-files-found: error
+          retention-days: 30
