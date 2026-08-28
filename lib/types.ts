@@ -31,6 +31,7 @@ export type Quest = {
   proofKinds?: ProofKind[];
   completedAt?: string;
   aiGenerated?: boolean;
+  aiPending?: boolean;
   adaptationReason?: string;
   difficulty?: DifficultyBand;
   prerequisiteNote?: string;
