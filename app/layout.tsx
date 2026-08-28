@@ -8,12 +8,14 @@ import "./continuation.css";
 import "./weekly-trials.css";
 import "./phase21-polish.css";
 import "./weekly-ledger.css";
+import "./mobile-app-shell.css";
 import TutorialOverlay from "./TutorialOverlay";
 import PWAClient from "./PWAClient";
 import ContinuationUnlock from "./ContinuationUnlock";
 import CycleManager from "./CycleManager";
 import WeeklyTrialDeck from "./WeeklyTrialDeck";
 import WeeklyProgressLedger from "./WeeklyProgressLedger";
+import MobileAppShell from "./MobileAppShell";
 
 export const metadata: Metadata = {
   title: "BECOMR — Become Capable",
@@ -31,5 +33,5 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({children}:{children:React.ReactNode}) {
-  return <html lang="en"><body>{children}<CycleManager/><WeeklyTrialDeck/><WeeklyProgressLedger/><ContinuationUnlock/><PWAClient/><TutorialOverlay/></body></html>;
+  return <html lang="en"><body>{children}<CycleManager/><WeeklyTrialDeck/><WeeklyProgressLedger/><ContinuationUnlock/><PWAClient/><TutorialOverlay/><MobileAppShell/></body></html>;
 }
