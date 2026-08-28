@@ -1,6 +1,6 @@
 {
   "name": "becomr",
-  "version": "0.24.2",
+  "version": "0.26.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
