@@ -12,6 +12,7 @@ import "./mobile-app-shell.css";
 import "./phase23-24.css";
 import "./adaptive-status.css";
 import "./phase25-30.css";
+import "./phase30-responsive.css";
 import TutorialOverlay from "./TutorialOverlay";
 import PWAClient from "./PWAClient";
 import ContinuationUnlock from "./ContinuationUnlock";
