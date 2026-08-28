@@ -1,0 +1,33 @@
+name: Verify BECOMR Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'lib/**'
+      - 'data/**'
+      - 'public/**'
+      - 'package.json'
+      - 'next.config.mjs'
+      - 'tsconfig.json'
+      - '.github/workflows/verify-build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current build
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: npm install
+      - name: Verify production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://hzhxbjvzgnrrtrevhokt.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_6GpyGYu4iB8u8OmEtBes2Q_Cl62FoWg
