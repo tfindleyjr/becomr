@@ -26,15 +26,19 @@ export default function AdaptiveWeeklyEngine(){
         const currentWeekly=state.quests.filter(q=>q.pathId===path.id&&q.cycleKey===week.cycleKey&&(q.kind==="weekly_trial"||q.kind==="weekly"));
         if(currentWeekly.length<3||currentWeekly.every(q=>q.aiGenerated))continue;
 
+        // Week 1 adapts from the Path itself. Later weeks layer previous Proof,
+        // Archive reflection and performance history on top of that foundation.
         const previous=(state.cycleHistory||[]).find(h=>h.type==="week"&&h.weekNumber===week.weekNumber-1&&h.paths?.some(p=>p.pathId===path.id));
-        if(week.weekNumber===1&&!previous)continue;
 
         running.current.add(path.id);
         try{
           const idx=currentNodeIndex(state,path);
           const currentNode=path.nodes[Math.min(idx,path.nodes.length-1)];
           const nextNode=path.nodes[Math.min(idx+1,path.nodes.length-1)]||currentNode;
-          const recentProofs=state.quests.filter(q=>q.pathId===path.id&&q.done).slice(-6).map(q=>({title:q.title,evidence:q.evidence||""}));
+          const recentProofs=state.quests
+            .filter(q=>q.pathId===path.id&&q.done)
+            .slice(-6)
+            .map(q=>({title:q.title,evidence:q.evidence||""}));
           const archive=state.archive[0]||null;
           const res=await fetch("/api/ai/weekly",{
             method:"POST",headers:{"Content-Type":"application/json"},
@@ -47,7 +51,8 @@ export default function AdaptiveWeeklyEngine(){
               capacity:path.capacity||"steady",
               previousWeek:previous?.quests||[],
               recentProofs,
-              archive
+              archive,
+              firstWeek:week.weekNumber===1
             })
           });
           const raw=await res.text();
@@ -72,7 +77,7 @@ export default function AdaptiveWeeklyEngine(){
       }
     }
 
-    const initial=window.setTimeout(()=>adapt(),1800);
+    const initial=window.setTimeout(()=>adapt(),650);
     const onCycle=(e:Event)=>adapt((e as CustomEvent<AppState>).detail);
     window.addEventListener("becomr-cycle-updated",onCycle);
     return()=>{window.clearTimeout(initial);window.removeEventListener("becomr-cycle-updated",onCycle)};
